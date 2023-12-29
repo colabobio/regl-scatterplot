@@ -145,6 +145,7 @@ export const createLasso = (
 
   let isMouseDown = false;
   let isLasso = false;
+  let lassoPosCenter = [];
   let lassoPos = [];
   let lassoPosFlat = [];
   let lassoPrevMousePos;
@@ -423,6 +424,8 @@ export const createLasso = (
       }
       lassoPrevMousePos = currMousePos;
       const point = pointNorm(currMousePos);
+
+      lassoPosCenter = [point];
       lassoPos = [point];
       lassoPosFlat = [point[0], point[1]];
     } else {
@@ -434,10 +437,43 @@ export const createLasso = (
       );
 
       if (d > DEFAULT_LASSO_MIN_DIST) {
+        const dx = currMousePos[0] - lassoPrevMousePos[0];
+        const dy = currMousePos[1] - lassoPrevMousePos[1];
+        const nx = -dy / d;
+        const ny = +dx / d;
+
+        // console.log("*******", nx, ny);
+
+        const w = 10;
+
+        const pl = pointNorm([
+          currMousePos[0] - w * nx,
+          currMousePos[1] - w * ny,
+        ]);
+        const pr = pointNorm([
+          currMousePos[0] + w * nx,
+          currMousePos[1] + w * ny,
+        ]);
+
+        // console.log("*******");
+        // console.log("pl", pl);
+
         lassoPrevMousePos = currMousePos;
         const point = pointNorm(currMousePos);
-        lassoPos.push(point);
-        lassoPosFlat.push(point[0], point[1]);
+
+        // console.log("point", point);
+
+        lassoPosCenter.push(point);
+        const N = lassoPosCenter.length;
+
+        // insert [pl, pr] in lassoPos at position N
+
+        lassoPos.splice(N, 0, pl, pr);
+        lassoPosFlat.splice(2 * N, 0, pl[0], pl[1], pr[0], pl[1]);
+
+        // lassoPos.push(point);
+        // lassoPosFlat.push(point[0], point[1]);
+
         if (lassoPos.length > 1) {
           draw();
         }
@@ -458,6 +494,7 @@ export const createLasso = (
   };
 
   const clear = () => {
+    lassoPosCenter = [];
     lassoPos = [];
     lassoPosFlat = [];
     lassoPrevMousePos = undefined;
