@@ -3524,7 +3524,7 @@ const createScatterplot = (
         drawBackgroundImage();
       }
 
-      if (lassoPointsCurr.length > 2) drawPolygon2d();
+      // if (lassoPointsCurr.length > 2) drawPolygon2d();
 
       // The draw order of the following calls is important!
       if (!isTransitioning) {
