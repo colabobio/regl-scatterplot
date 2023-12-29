@@ -469,7 +469,7 @@ export const createLasso = (
         // insert [pl, pr] in lassoPos at position N
 
         lassoPos.splice(N, 0, pl, pr);
-        lassoPosFlat.splice(2 * N, 0, pl[0], pl[1], pr[0], pl[1]);
+        lassoPosFlat.splice(2 * N, 0, pl[0], pl[1], pr[0], pr[1]);
 
         // lassoPos.push(point);
         // lassoPosFlat.push(point[0], point[1]);
