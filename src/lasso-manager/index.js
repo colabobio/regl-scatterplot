@@ -442,8 +442,6 @@ export const createLasso = (
         const nx = -dy / d;
         const ny = +dx / d;
 
-        // console.log("*******", nx, ny);
-
         const w = 10;
 
         const pl = pointNorm([
@@ -455,21 +453,15 @@ export const createLasso = (
           currMousePos[1] + w * ny,
         ]);
 
-        // console.log("*******");
-        // console.log("pl", pl);
-
         lassoPrevMousePos = currMousePos;
         const point = pointNorm(currMousePos);
-
-        // console.log("point", point);
 
         lassoPosCenter.push(point);
         const N = lassoPosCenter.length;
 
         // insert [pl, pr] in lassoPos at position N
-
         lassoPos.splice(N, 0, pl, pr);
-        lassoPosFlat.splice(2 * N, 0, pl[0], pl[1], pr[0], pr[1]);
+        lassoPosFlat.splice(2 * (N - 1), 0, pl[0], pl[1], pr[0], pr[1]);
 
         // lassoPos.push(point);
         // lassoPosFlat.push(point[0], point[1]);
