@@ -516,11 +516,13 @@ export const createLasso = (
 
     extendDb.cancel();
 
+    const centerPositions = [...lassoPosCenter]
+
     clear();
 
     // When `currLassoPos` is empty the user didn't actually lasso
     if (currLassoPos.length) {
-      onEnd(currLassoPos, currLassoPosFlat, { merge });
+      onEnd(currLassoPos, currLassoPosFlat, { merge, centerPositions:centerPositions });
     }
 
     return currLassoPos;

@@ -183,6 +183,7 @@ const colorsScale = [
   '#ffffe0', // bright yellow
 ];
 scatterplot.set({ colorBy: 'value', pointColor: colorsScale });
+scatterplot.subscribe("lassoEnd", (data) => { console.log(data) })
 
 setPointSize(pointSize);
 setOpacity(opacity);
