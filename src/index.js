@@ -14,9 +14,7 @@ import {
 
 import createRenderer from './renderer';
 import createLassoManager from './lasso-manager';
-// //part that I added
 import createDirManager from './dir-manager';
-// //end of part that I added
 import BG_FS from './bg.fs';
 import BG_VS from './bg.vs';
 import POINT_FS from './point.fs';
@@ -119,8 +117,6 @@ import {
   CATEGORICAL,
   VALUE_ZW_DATA_TYPES,
 } from './constants';
-
-
 
 import {
   createRegl,
@@ -828,7 +824,7 @@ const createScatterplot = (
     pubSub.publish('lassoStart');
   };
 
-  const lassoEnd = (lassoPoints, lassoPointsFlat, { merge = false, centerPositions } = {}) => {
+  const lassoEnd = (lassoPoints, lassoPointsFlat, { merge = false } = {}) => {
     camera.config({ isFixed: false });
     lassoPointsCurr = [...lassoPoints];
     const pointsInLasso = findPointsInLasso(lassoPointsFlat);
@@ -836,7 +832,6 @@ const createScatterplot = (
 
     pubSub.publish('lassoEnd', {
       coordinates: lassoPointsCurr,
-      centerPositions: centerPositions
     });
     if (lassoClearEvent === LASSO_CLEAR_ON_END) lassoClear();
   };
@@ -851,13 +846,13 @@ const createScatterplot = (
   });
 
   const checkLassoMode = () => mouseMode === MOUSE_MODE_LASSO;
-  
+
   const dirExtend = (lassoPoints, lassoPointsFlat) => {
-    //lassoPointsCurr = lassoPoints;
+    // lassoPointsCurr = lassoPoints;
     lasso.setPoints(lassoPointsFlat);
     pubSub.publish('dirExtend', { coordinates: lassoPoints });
   };
-  
+
   const dirStart = () => {
     // Fix camera for the lasso selection
     camera.config({ isFixed: true });
@@ -871,7 +866,11 @@ const createScatterplot = (
     pubSub.publish('dirStart');
   };
 
-  const dirEnd = (lassoPoints, lassoPointsFlat, { merge = false, dircenterPositions } = {}) => {
+  const dirEnd = (
+    lassoPoints,
+    lassoPointsFlat,
+    { merge = false, dircenterPositions } = {}
+  ) => {
     camera.config({ isFixed: false });
     lassoPointsCurr = [...lassoPoints];
     const pointsInLasso = findPointsInLasso(lassoPointsFlat);
@@ -879,12 +878,10 @@ const createScatterplot = (
 
     pubSub.publish('dirEnd', {
       coordinates: lassoPointsCurr,
-      dircenterPositions: dircenterPositions
+      dircenterPositions,
     });
     if (lassoClearEvent === LASSO_CLEAR_ON_END) lassoClear();
   };
-
-
 
   const checkModKey = (event, action) => {
     switch (keyActionMap[action]) {
@@ -3564,7 +3561,6 @@ const createScatterplot = (
       }
 
       if (lassoPointsCurr.length > 2) drawPolygon2d();
-      
 
       // The draw order of the following calls is important!
       if (!isTransitioning) {
@@ -3691,13 +3687,13 @@ const createScatterplot = (
     zoomToArea,
     zoomToPoints,
     zoomToOrigin,
-    /** 
+    /**
      * @param {"lasso" | "directional"} type
      */
     setSelectionManager(type) {
       lassoManager.destroy();
-      if (type === "lasso") {
-         lassoManager = createLassoManager(canvas, {
+      if (type === 'lasso') {
+        lassoManager = createLassoManager(canvas, {
           onStart: lassoStart,
           onDraw: lassoExtend,
           onEnd: lassoEnd,
@@ -3705,7 +3701,7 @@ const createScatterplot = (
           initiatorParentElement: lassoInitiatorParentElement,
           pointNorm: ([x, y]) => getScatterGlPos(getNdcX(x), getNdcY(y)),
         });
-      } else if (type === "directional") {
+      } else if (type === 'directional') {
         lassoManager = createDirManager(canvas, {
           onStart: dirStart,
           onDraw: dirExtend,
@@ -3715,9 +3711,9 @@ const createScatterplot = (
           pointNorm: ([x, y]) => getScatterGlPos(getNdcX(x), getNdcY(y)),
         });
       } else {
-        throw new Error("Unknown type", { type });
+        throw new Error('Unknown type', { type });
       }
-    }
+    },
   };
 };
 
