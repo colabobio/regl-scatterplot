@@ -1,5 +1,4 @@
 import createDom2dCamera from 'dom-2d-camera';
-import KDBush from 'kdbush';
 import createPubSub from 'pub-sub-es';
 import { mat4, vec4 } from 'gl-matrix';
 import createLine from 'regl-line';
@@ -12,6 +11,7 @@ import {
   throttleAndDebounce,
 } from '@flekschas/utils';
 
+import createKdbush from './kdbush';
 import createRenderer from './renderer';
 import createLassoManager from './lasso-manager';
 // //part that I added
@@ -118,6 +118,7 @@ import {
   CONTINUOUS,
   CATEGORICAL,
   VALUE_ZW_DATA_TYPES,
+  DEFAULT_SPATIAL_INDEX_USE_WORKER,
 } from './constants';
 
 
@@ -141,6 +142,7 @@ import {
   flipObj,
   rgbBrightness,
   clip,
+  toArrayOrientedPoints,
 } from './utils';
 
 import { version } from '../package.json';
@@ -165,7 +167,7 @@ const checkDeprecations = (properties) => {
 const getEncodingType = (
   type,
   defaultValue,
-  { allowSegment = false, allowDensity = false } = {}
+  { allowSegment = false, allowDensity = false, allowInherit = false } = {}
 ) => {
   // Z refers to the 3rd component of the RGBA value
   if (Z_NAMES.has(type)) return 'valueZ';
@@ -176,6 +178,8 @@ const getEncodingType = (
   if (type === 'segment') return allowSegment ? 'segment' : defaultValue;
 
   if (type === 'density') return allowDensity ? 'density' : defaultValue;
+
+  if (type === 'inherit') return allowInherit ? 'inherit' : defaultValue;
 
   return defaultValue;
 };
@@ -196,7 +200,7 @@ const getEncodingIdx = (type) => {
 const createScatterplot = (
   /** @type {Partial<import('./types').Properties>} */ initialProperties = {}
 ) => {
-  /** @type {import('./types').PubSub} */
+  /** @type {import('pub-sub-es').PubSub<import('./types').Events>} */
   const pubSub = createPubSub({
     async: !initialProperties.syncEvents,
     caseInsensitive: true,
@@ -268,6 +272,7 @@ const createScatterplot = (
   const {
     performanceMode = DEFAULT_PERFORMANCE_MODE,
     opacityByDensityDebounceTime = DEFAULT_OPACITY_BY_DENSITY_DEBOUNCE_TIME,
+    spatialIndexUseWorker = DEFAULT_SPATIAL_INDEX_USE_WORKER,
   } = initialProperties;
 
   // Same as renderer ||= createRenderer({ ... }) but avoids having to rely on
@@ -300,11 +305,12 @@ const createScatterplot = (
   let isPointsFiltered = false;
   /** @type{Set<number>} */
   const filteredPointsSet = new Set();
+  let points = [];
   let numPoints = 0;
   let numPointsInView = 0;
   let lassoActive = false;
   let lassoPointsCurr = [];
-  let searchIndex;
+  let spatialIndex;
   let viewAspectRatio;
   let dataAspectRatio =
     initialProperties.aspectRatio || DEFAULT_DATA_ASPECT_RATIO;
@@ -426,7 +432,7 @@ const createScatterplot = (
   pointConnectionColorBy = getEncodingType(
     pointConnectionColorBy,
     DEFAULT_POINT_CONNECTION_COLOR_BY,
-    { allowSegment: true }
+    { allowSegment: true, allowInherit: true }
   );
   pointConnectionOpacityBy = getEncodingType(
     pointConnectionOpacityBy,
@@ -539,12 +545,12 @@ const createScatterplot = (
 
   const getPoints = () => {
     if (isPointsFiltered)
-      return searchIndex.points.filter((_, i) => filteredPointsSet.has(i));
-    return searchIndex.points;
+      return points.filter((_, i) => filteredPointsSet.has(i));
+    return points;
   };
 
   const getPointsInBBox = (x0, y0, x1, y1) => {
-    const pointsInBBox = searchIndex.range(x0, y0, x1, y1);
+    const pointsInBBox = spatialIndex.range(x0, y0, x1, y1);
     if (isPointsFiltered)
       return pointsInBBox.filter((i) => filteredPointsSet.has(i));
     return pointsInBBox;
@@ -568,7 +574,7 @@ const createScatterplot = (
     let minDist = pointSizeNdc;
     let clostestPoint = -1;
     pointsInBBox.forEach((idx) => {
-      const [ptX, ptY] = searchIndex.points[idx];
+      const [ptX, ptY] = points[idx];
       const d = dist(ptX, ptY, xNdc, yNdc);
       if (d < minDist) {
         minDist = d;
@@ -596,7 +602,7 @@ const createScatterplot = (
     // next we test each point in the bounding box if it is in the polygon too
     const pointsInPolygon = [];
     pointsInBBox.forEach((pointIdx) => {
-      if (isPointInPolygon(lassoPolygon, searchIndex.points[pointIdx]))
+      if (isPointInPolygon(lassoPolygon, points[pointIdx]))
         pointsInPolygon.push(pointIdx);
     });
 
@@ -614,7 +620,7 @@ const createScatterplot = (
     if (
       computingPointConnectionCurves ||
       !showPointConnections ||
-      !hasPointConnections(searchIndex.points[pointIdxs[0]])
+      !hasPointConnections(points[pointIdxs[0]])
     )
       return;
 
@@ -627,7 +633,7 @@ const createScatterplot = (
     // Get line IDs
     const lineIds = Object.keys(
       pointIdxs.reduce((ids, pointIdx) => {
-        const point = searchIndex.points[pointIdx];
+        const point = points[pointIdx];
         const isStruct = Array.isArray(point[4]);
         const lineId = isStruct ? point[4][0] : point[4];
 
@@ -770,7 +776,9 @@ const createScatterplot = (
   ) => {
     let needsRedraw = false;
 
-    if (point >= 0 && point < numPoints) {
+    const isFilteredOut = isPointsFiltered && !filteredPointsSet.has(point);
+
+    if (!isFilteredOut && point >= 0 && point < numPoints) {
       needsRedraw = true;
       const oldHoveredPoint = hoveredPoint;
       const newHoveredPoint = point !== hoveredPoint;
@@ -1372,7 +1380,7 @@ const createScatterplot = (
     pointConnectionColorBy = getEncodingType(
       type,
       DEFAULT_POINT_CONNECTION_COLOR_BY,
-      { allowSegment: true }
+      { allowSegment: true, allowInherit: true }
     );
   };
   const setPointConnectionOpacityBy = (type) => {
@@ -1688,7 +1696,7 @@ const createScatterplot = (
   const drawReticle = () => {
     if (!(hoveredPoint >= 0)) return;
 
-    const [x, y] = searchIndex.points[hoveredPoint].slice(0, 2);
+    const [x, y] = points[hoveredPoint].slice(0, 2);
 
     // Homogeneous coordinates of the point
     const v = [x, y, 0, 1];
@@ -1825,30 +1833,41 @@ const createScatterplot = (
     }
   };
 
-  const setPoints = (newPoints, dataTypes = {}) => {
-    isPointsDrawn = false;
+  const setPoints = (newPoints, options = {}) =>
+    new Promise((resolve) => {
+      isPointsDrawn = false;
 
-    numPoints = newPoints.length;
-    numPointsInView = numPoints;
+      const preventFilterReset =
+        options?.preventFilterReset && newPoints.length === numPoints;
 
-    if (stateTex) stateTex.destroy();
-    stateTex = createStateTexture(newPoints, dataTypes);
+      numPoints = newPoints.length;
+      numPointsInView = numPoints;
 
-    normalPointsIndexBuffer({
-      usage: 'static',
-      type: 'float',
-      data: createPointIndex(numPoints),
+      if (stateTex) stateTex.destroy();
+      stateTex = createStateTexture(newPoints, {
+        z: options.zDataType,
+        w: options.wDataType,
+      });
+
+      if (!preventFilterReset) {
+        normalPointsIndexBuffer({
+          usage: 'static',
+          type: 'float',
+          data: createPointIndex(numPoints),
+        });
+      }
+
+      createKdbush(options.spatialIndex || newPoints, {
+        useWorker: spatialIndexUseWorker,
+      })
+        .then((newSearchIndex) => {
+          spatialIndex = newSearchIndex;
+          points = newPoints;
+
+          isPointsDrawn = true;
+        })
+        .then(resolve);
     });
-
-    searchIndex = new KDBush(
-      newPoints,
-      (p) => p[0],
-      (p) => p[1],
-      16
-    );
-
-    isPointsDrawn = true;
-  };
 
   const cacheCamera = (newTarget, newDistance) => {
     cameraZoomTargetStart = camera.target;
@@ -2085,7 +2104,7 @@ const createScatterplot = (
       };
 
       // Update point connections
-      if (showPointConnections || hasPointConnections(searchIndex.points[0])) {
+      if (showPointConnections || hasPointConnections(points[0])) {
         setPointConnections(getPoints()).then(() => {
           if (!preventEvent) pubSub.publish('pointConnectionsDraw');
           finish();
@@ -2153,7 +2172,7 @@ const createScatterplot = (
       };
 
       // Update point connections
-      if (showPointConnections || hasPointConnections(searchIndex.points[0])) {
+      if (showPointConnections || hasPointConnections(points[0])) {
         setPointConnections(getPoints()).then(() => {
           if (!preventEvent) pubSub.publish('pointConnectionsDraw');
           // We have to re-apply the selection because the connections might
@@ -2246,90 +2265,6 @@ const createScatterplot = (
     pubSub.publish('transitionStart');
   };
 
-  const toArrayOrientedPoints = (points) =>
-    new Promise((resolve, reject) => {
-      if (!points || Array.isArray(points)) {
-        resolve(points);
-      } else {
-        const length =
-          Array.isArray(points.x) || ArrayBuffer.isView(points.x)
-            ? points.x.length
-            : 0;
-
-        const getX =
-          (Array.isArray(points.x) || ArrayBuffer.isView(points.x)) &&
-          ((i) => points.x[i]);
-        const getY =
-          (Array.isArray(points.y) || ArrayBuffer.isView(points.y)) &&
-          ((i) => points.y[i]);
-        const getL =
-          (Array.isArray(points.line) || ArrayBuffer.isView(points.line)) &&
-          ((i) => points.line[i]);
-        const getLO =
-          (Array.isArray(points.lineOrder) ||
-            ArrayBuffer.isView(points.lineOrder)) &&
-          ((i) => points.lineOrder[i]);
-
-        const components = Object.keys(points);
-        const getZ = (() => {
-          const z = components.find((c) => Z_NAMES.has(c));
-          return (
-            z &&
-            (Array.isArray(points[z]) || ArrayBuffer.isView(points[z])) &&
-            ((i) => points[z][i])
-          );
-        })();
-        const getW = (() => {
-          const w = components.find((c) => W_NAMES.has(c));
-          return (
-            w &&
-            (Array.isArray(points[w]) || ArrayBuffer.isView(points[w])) &&
-            ((i) => points[w][i])
-          );
-        })();
-
-        if (getX && getY && getZ && getW && getL && getLO) {
-          resolve(
-            points.x.map((x, i) => [
-              x,
-              getY(i),
-              getZ(i),
-              getW(i),
-              getL(i),
-              getLO(i),
-            ])
-          );
-        } else if (getX && getY && getZ && getW && getL) {
-          resolve(
-            Array.from({ length }, (_, i) => [
-              getX(i),
-              getY(i),
-              getZ(i),
-              getW(i),
-              getL(i),
-            ])
-          );
-        } else if (getX && getY && getZ && getW) {
-          resolve(
-            Array.from({ length }, (_, i) => [
-              getX(i),
-              getY(i),
-              getZ(i),
-              getW(i),
-            ])
-          );
-        } else if (getX && getY && getZ) {
-          resolve(
-            Array.from({ length }, (_, i) => [getX(i), getY(i), getZ(i)])
-          );
-        } else if (getX && getY) {
-          resolve(Array.from({ length }, (_, i) => [getX(i), getY(i)]));
-        } else {
-          reject(new Error('You need to specify at least x and y'));
-        }
-      }
-    });
-
   /**
    * @param {import('./types').Points} newPoints
    * @param {import('./types').ScatterplotMethodOptions['draw']} options
@@ -2340,7 +2275,7 @@ const createScatterplot = (
       return Promise.reject(new Error('The instance was already destroyed'));
     }
     return toArrayOrientedPoints(newPoints).then(
-      (points) =>
+      (newPointsArray) =>
         new Promise((resolve) => {
           if (isDestroyed) {
             // In the special case where the instance was destroyed after
@@ -2353,110 +2288,126 @@ const createScatterplot = (
 
           let pointsCached = false;
 
-          if (!options.preventFilterReset || points?.length !== numPoints) {
+          if (
+            !options.preventFilterReset ||
+            newPointsArray?.length !== numPoints
+          ) {
             isPointsFiltered = false;
             filteredPointsSet.clear();
           }
 
           const drawPointConnections =
-            points &&
-            hasPointConnections(points[0]) &&
+            newPointsArray &&
+            hasPointConnections(newPointsArray[0]) &&
             (showPointConnections || options.showPointConnectionsOnce);
 
           const { zDataType, wDataType } = options;
 
-          if (points) {
-            if (options.transition) {
-              if (points.length === numPoints) {
-                pointsCached = cachePoints(points, {
-                  z: zDataType,
-                  w: wDataType,
-                });
-              } else {
-                console.warn(
-                  'Cannot transition! The number of points between the previous and current draw call must be identical.'
-                );
+          new Promise((resolveDraw) => {
+            if (newPointsArray) {
+              if (options.transition) {
+                if (newPointsArray.length === numPoints) {
+                  pointsCached = cachePoints(newPointsArray, {
+                    z: zDataType,
+                    w: wDataType,
+                  });
+                } else {
+                  console.warn(
+                    'Cannot transition! The number of points between the previous and current draw call must be identical.'
+                  );
+                }
               }
-            }
 
-            setPoints(points, { z: zDataType, w: wDataType });
+              setPoints(newPointsArray, {
+                zDataType,
+                wDataType,
+                preventFilterReset: options.preventFilterReset,
+                spatialIndex: options.spatialIndex,
+              }).then(() => {
+                if (options.hover !== undefined) {
+                  hover(options.hover, { preventEvent: true });
+                }
 
-            if (options.hover !== undefined) {
-              hover(options.hover, { preventEvent: true });
-            }
+                if (options.select !== undefined) {
+                  select(options.select, { preventEvent: true });
+                }
 
-            if (options.select !== undefined) {
-              select(options.select, { preventEvent: true });
-            }
+                if (options.filter !== undefined) {
+                  filter(options.filter, { preventEvent: true });
+                }
 
-            if (options.filter !== undefined) {
-              filter(options.filter, { preventEvent: true });
-            }
-
-            if (drawPointConnections) {
-              setPointConnections(points).then(() => {
-                pubSub.publish('pointConnectionsDraw');
-                draw = true;
-                drawReticleOnce = options.showReticleOnce;
-              });
-            }
-          }
-
-          if (options.transition && pointsCached) {
-            if (drawPointConnections) {
-              Promise.all([
-                new Promise((resolveTransition) => {
-                  pubSub.subscribe(
-                    'transitionEnd',
-                    () => {
-                      // Point connects cannot be transitioned yet so we hide them during
-                      // the transition. Hence, we need to make sure we call `draw()` once
-                      // the transition has ended.
+                if (drawPointConnections) {
+                  setPointConnections(newPointsArray)
+                    .then(() => {
+                      pubSub.publish('pointConnectionsDraw');
                       draw = true;
                       drawReticleOnce = options.showReticleOnce;
-                      resolveTransition();
-                    },
-                    1
-                  );
-                }),
-                new Promise((resolveDraw) => {
-                  pubSub.subscribe('pointConnectionsDraw', resolveDraw, 1);
-                }),
-              ]).then(resolve);
+                    })
+                    .then(resolve);
+                } else {
+                  resolveDraw();
+                }
+              });
             } else {
-              pubSub.subscribe(
-                'transitionEnd',
-                () => {
-                  // Point connects cannot be transitioned yet so we hide them during
-                  // the transition. Hence, we need to make sure we call `draw()` once
-                  // the transition has ended.
-                  draw = true;
-                  drawReticleOnce = options.showReticleOnce;
-                  resolve();
-                },
-                1
-              );
+              resolveDraw();
             }
-            startTransition({
-              duration: options.transitionDuration,
-              easing: options.transitionEasing,
-            });
-          } else {
-            if (drawPointConnections) {
-              Promise.all([
-                new Promise((resolveDraw) => {
-                  pubSub.subscribe('draw', resolveDraw, 1);
-                }),
-                new Promise((resolveDraw) => {
-                  pubSub.subscribe('pointConnectionsDraw', resolveDraw, 1);
-                }),
-              ]).then(resolve);
+          }).then(() => {
+            if (options.transition && pointsCached) {
+              if (drawPointConnections) {
+                Promise.all([
+                  new Promise((resolveTransition) => {
+                    pubSub.subscribe(
+                      'transitionEnd',
+                      () => {
+                        // Point connects cannot be transitioned yet so we hide them during
+                        // the transition. Hence, we need to make sure we call `draw()` once
+                        // the transition has ended.
+                        draw = true;
+                        drawReticleOnce = options.showReticleOnce;
+                        resolveTransition();
+                      },
+                      1
+                    );
+                  }),
+                  new Promise((resolveDraw) => {
+                    pubSub.subscribe('pointConnectionsDraw', resolveDraw, 1);
+                  }),
+                ]).then(resolve);
+              } else {
+                pubSub.subscribe(
+                  'transitionEnd',
+                  () => {
+                    // Point connects cannot be transitioned yet so we hide them during
+                    // the transition. Hence, we need to make sure we call `draw()` once
+                    // the transition has ended.
+                    draw = true;
+                    drawReticleOnce = options.showReticleOnce;
+                    resolve();
+                  },
+                  1
+                );
+              }
+              startTransition({
+                duration: options.transitionDuration,
+                easing: options.transitionEasing,
+              });
             } else {
-              pubSub.subscribe('draw', resolve, 1);
+              if (drawPointConnections) {
+                Promise.all([
+                  new Promise((resolveDraw) => {
+                    pubSub.subscribe('draw', resolveDraw, 1);
+                  }),
+                  new Promise((resolveDraw) => {
+                    pubSub.subscribe('pointConnectionsDraw', resolveDraw, 1);
+                  }),
+                ]).then(resolve);
+              } else {
+                pubSub.subscribe('draw', resolve, 1);
+              }
+              draw = true;
+              drawReticleOnce = options.showReticleOnce;
             }
-            draw = true;
-            drawReticleOnce = options.showReticleOnce;
-          }
+          });
         })
     );
   };
@@ -2482,7 +2433,7 @@ const createScatterplot = (
     let yMax = -Infinity;
 
     for (let i = 0; i < pointIdxs.length; i++) {
-      const [x, y] = searchIndex.points[pointIdxs[i]];
+      const [x, y] = points[pointIdxs[i]];
       xMin = Math.min(xMin, x);
       xMax = Math.max(xMax, x);
       yMin = Math.min(yMin, y);
@@ -2606,7 +2557,7 @@ const createScatterplot = (
   const getScreenPosition = (pointIdx) => {
     if (!isPointsDrawn) throw new Error(ERROR_POINTS_NOT_DRAWN);
 
-    const point = searchIndex.points[pointIdx];
+    const point = points[pointIdx];
 
     if (!point) return undefined;
 
@@ -2864,7 +2815,7 @@ const createScatterplot = (
   const setShowPointConnections = (newShowPointConnections) => {
     showPointConnections = !!newShowPointConnections;
     if (showPointConnections) {
-      if (isPointsDrawn && hasPointConnections(searchIndex.points[0])) {
+      if (isPointsDrawn && hasPointConnections(points[0])) {
         setPointConnections(getPoints()).then(() => {
           pubSub.publish('pointConnectionsDraw');
           draw = true;
@@ -3022,13 +2973,13 @@ const createScatterplot = (
       return opacityByDensityDebounceTime;
     if (property === 'opacityInactiveMax') return opacityInactiveMax;
     if (property === 'opacityInactiveScale') return opacityInactiveScale;
-    if (property === 'points') return searchIndex.points;
+    if (property === 'points') return points;
     if (property === 'hoveredPoint') return hoveredPoint;
     if (property === 'selectedPoints') return [...selectedPoints];
     if (property === 'filteredPoints')
       return isPointsFiltered
         ? Array.from(filteredPointsSet)
-        : Array.from({ length: searchIndex.points.length }, (_, i) => i);
+        : Array.from({ length: points.length }, (_, i) => i);
     if (property === 'pointsInView') return getPointsInView();
     if (property === 'pointColor')
       return pointColor.length === 1 ? pointColor[0] : pointColor;
@@ -3093,6 +3044,7 @@ const createScatterplot = (
     if (property === 'isPointsFiltered') return isPointsFiltered;
     if (property === 'zDataType') return valueZDataType;
     if (property === 'wDataType') return valueWDataType;
+    if (property === 'spatialIndex') return spatialIndex?.data;
 
     return undefined;
   };
@@ -3467,9 +3419,11 @@ const createScatterplot = (
       is2d: true,
     });
     pointConnections = createLine(renderer.regl, {
-      color: pointConnectionColor,
-      colorHover: pointConnectionColorHover,
-      colorActive: pointConnectionColorActive,
+      color: getColors(
+        pointConnectionColor,
+        pointConnectionColorActive,
+        pointConnectionColorHover
+      ),
       opacity:
         pointConnectionOpacity === null ? null : pointConnectionOpacity[0],
       width: pointConnectionSize[0],
@@ -3644,7 +3598,7 @@ const createScatterplot = (
     pointConnections.destroy();
     reticleHLine.destroy();
     reticleVLine.destroy();
-    if (!initialProperties.renderer) {
+    if (!initialProperties.renderer && !renderer.isDestroyed) {
       // Since the user did not pass in an externally created renderer we can
       // assume that the renderer is only used by this scatter plot instance.
       // Therefore it's save to destroy it when this scatter plot instance is
@@ -3723,6 +3677,22 @@ const createScatterplot = (
 
 export default createScatterplot;
 
-export { createRegl, createRenderer, createTextureFromUrl };
+/**
+ * Create spatial index from points.
+ *
+ * @description
+ * The spatial index can be used with `scatterplot.draw(points, { spatialIndex })`
+ * to drastically speed up the draw call.
+ *
+ * @param {import('./types').Points} points - The points for which to create the spatial index.
+ * @param {boolean=} useWorker - Whether to create the spatial index in a worker thread or not. If `undefined`, the spatial index will be created in a worker if `points` contains more than one million entries.
+ * @return {Promise<ArrayBuffer>} Spatial index
+ */
+const createSpatialIndex = (points, useWorker) =>
+  toArrayOrientedPoints(points)
+    .then((arrayPoints) => createKdbush(arrayPoints, { useWorker }))
+    .then((index) => index.data);
+
+export { createRegl, createRenderer, createSpatialIndex, createTextureFromUrl };
 
 export { checkReglExtensions as checkSupport } from './utils';
