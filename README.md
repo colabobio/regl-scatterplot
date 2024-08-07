@@ -25,6 +25,15 @@ A highly-scalable pan-and-zoomable scatter plot library that uses WebGL through 
 - **Select multiple dots**:
 
   - While pressing <kbd>SHIFT</kbd>, click and drag your mouse. All items within the lasso will be selected.
+  - Upon activating the lasso on long press (i.e., `lassoOnLongPress: true`) you can click and hold anywhere on the plot, and a circle will appear at your mouse cursor. Wait until the circle is closed, then drag your mouse to start lassoing.
+    <details><summary>Click here to see how it works</summary>
+    <p>
+
+    ![Lassso on Long Press](https://github.com/user-attachments/assets/5e6a7c2a-5686-4711-9b3d-36d45a96ca69)
+
+    </p>
+    </details>
+
   - Upon activating the lasso initiator (i.e., `lassoInitiator: true`) you can click into the background and a circle will appear under your mouse cursor. Click inside this circle and drag your mouse to start lassoing.
     <details><summary>Click here to see how it works</summary>
     <p>
@@ -402,7 +411,72 @@ call this function!
 
 <a name="scatterplot.clear" href="#scatterplot.clear">#</a> scatterplot.<b>clear</b>()
 
-Clears previously drawn points.
+Clears previously drawn points, point connections, and annotations.
+
+<a name="scatterplot.clearPoints" href="#scatterplot.clearPoints">#</a> scatterplot.<b>clearPoints</b>()
+
+Clears previously drawn points and point connections.
+
+<a name="scatterplot.clearPointConnections" href="#scatterplot.clearPointConnections">#</a> scatterplot.<b>clearPointConnections</b>()
+
+Clears previously point connections.
+
+<a name="scatterplot.drawAnnotations" href="#scatterplot.drawAnnotations">#</a> scatterplot.<b>drawAnnotations</b>(<i>annotations</i>)
+
+Draw line-based annotations of the following kind in normalized device coordinates:
+
+- Horizontal line
+- Vertical line
+- Rectangle
+- Polygon
+
+**Arguments:**
+
+- `annotations` is expected to be a list of the following objects:
+  - For horizontal lines: `{ y: number, x1?: number, x2?: number, lineColor?: Color, lineWidth?: number }`
+  - For vertical lines: `{ x: number, y1?: number, y2?: number, lineColor?: Color, lineWidth?: number }`
+  - For rectangle : `{ x1: number, y1: number, x2: number, y2: number, lineColor?: Color, lineWidth?: number }` or `{ x: number, y: number, width: number, height: number, lineColor?: Color, lineWidth?: number }`
+  - For polygons or lines: `{ vertices: [number, number][], lineColor?: Color, lineWidth?: number }`
+
+**Returns:** a Promise object that resolves once the annotations have been drawn or transitioned.
+
+**Examples:**
+
+```javascript
+const scatterplot = createScatterplot({
+  ...,
+  annotationLineColor: [1, 1, 1, 0.1], // Default line color
+  annotationLineWidth: 1, // Default line width
+});
+
+scatterplot.draw({
+  x: Array.from({ length: 10000 }, () => -1 + Math.random() * 2),
+  y: Array.from({ length: 10000 }, () => -1 + Math.random() * 2),
+});
+
+scatterplot.drawAnnotations([
+  // Horizontal line
+  { y: 0 },
+  // Vertical line
+  { x: 0 },
+  // Rectangle
+  {
+    x1: -0.5, y1: -0.5, x2: 0.5, y2: 0.5,
+    lineColor: [1, 0, 0, 0.33],
+    lineWidth: 2,
+  },
+  // Polygon
+  {
+    vertices: [[-1, 0], [0, 1], [1, 0], [0, -1], [-1, 0]],
+    lineColor: [1, 1, 0, 0.33],
+    lineWidth: 3,
+  },
+]);
+```
+
+<a name="scatterplot.clearAnnotations" href="#scatterplot.clearAnnotations">#</a> scatterplot.<b>clearAnnotations</b>()
+
+Clears previously drawn annotations.
 
 <a name="scatterplot.get" href="#scatterplot.set">#</a> scatterplot.<b>get</b>(<i>property</i>)
 
@@ -722,6 +796,11 @@ can be read and written via [`scatterplot.get()`](#scatterplot.get) and [`scatte
 | lassoInitiator                        | boolean                                      | `false`                             |                                                                 | `true`   | `false`     |
 | lassoInitiatorElement                 | object                                       | the lasso dom element               |                                                                 | `false`  | `false`     |
 | lassoInitiatorParentElement           | object                                       | `document.body`                     |                                                                 | `true`   | `false`     |
+| lassoOnLongPress                      | boolean                                      | `false`                             |                                                                 | `true`   | `false`     |
+| lassoLongPressTime                    | int                                          | `750`                               |                                                                 | `true`   | `false`     |
+| lassoLongPressAfterEffectTime         | int                                          | `500`                               |                                                                 | `true`   | `false`     |
+| lassoLongPressEffectDelay             | int                                          | `100`                               |                                                                 | `true`   | `false`     |
+| lassoLongPressRevertEffectTime        | int                                          | `250`                               |                                                                 | `true`   | `false`     |
 | showReticle                           | boolean                                      | `false`                             | `true` or `false`                                               | `true`   | `false`     |
 | reticleColor                          | quadruple                                    | rgba(1, 1, 1, .5)                   | hex, rgb, rgba                                                  | `true`   | `false`     |
 | xScale                                | function                                     | `null`                              | must follow the D3 scale API                                    | `true`   | `true`      |
@@ -733,6 +812,9 @@ can be read and written via [`scatterplot.get()`](#scatterplot.get) and [`scatte
 | isDestroyed                           | boolean                                      | `false`                             |                                                                 | `false`  | `false`     |
 | isPointsDrawn                         | boolean                                      | `false`                             |                                                                 | `false`  | `false`     |
 | isPointsFiltered                      | boolean                                      | `false`                             |                                                                 | `false`  | `false`     |
+| annotationLineColor                   | string or quadruple                          | `[1, 1, 1, 0.1]`                    | hex, rgb, rgba                                                  | `true`   | `false`     |
+| annotationLineWidth                   | number                                       | `1`                                 |                                                                 | `true`   | `false`     |
+| annotationHVLineLimit                 | number                                       | `1000`                              | the extent of horizontal or vertical lines                      | `true`   | `false`     |
 
 <a name="property-notes" href="#property-notes">#</a> <b>Notes:</b>
 

@@ -1,3 +1,25 @@
+## 1.10.2
+
+- Fix: expose x start/end and y start/end for horizontal and vertical line annotations.
+- Fix: ensure KDBush worker works in prod build
+
+## 1.10.1
+
+- Fix: ensure single annotations render properly ([#187](https://github.com/flekschas/regl-scatterplot/issues/187))
+
+## 1.10.0
+
+- Feat: add support for annotations via `scatterplot.drawAnnotations()`
+
+## 1.9.6
+
+- Fix: try ensure `zoomToArea` works in cases where `aspectRatio` is not equal to `1` and add tests to verify this
+
+## 1.9.5
+
+- Fix: option types of `zoomToLocation`, `zoomToOrigin`, `zoomToArea`
+- Fix: ensure `zoomToArea` works in cases where `aspectRatio` is not equal to `1`
+
 ## 1.9.4
 
 - Fix: `scatterplot.draw(newPoints, { preventFilterReset })` should preserves the filter ([Jupyter-Scatter#134](https://github.com/flekschas/jupyter-scatter/issues/134))

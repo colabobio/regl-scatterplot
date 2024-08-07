@@ -62,6 +62,7 @@ import {
   capitalize,
   catchError,
   isSameElements,
+  getPixelSum,
 } from './utils';
 
 const EPS = 1e-7;
@@ -2273,21 +2274,6 @@ test('other methods', async (t2) => {
         `only points ${filteredPoints} should be filtered in`
       );
 
-      const getPixelSum = (img, xStart, xEnd, yStart, yEnd) => {
-        let pixelSum = 0;
-        for (let i = yStart; i < yEnd; i++) {
-          for (let j = xStart; j < xEnd; j++) {
-            const idx = (i * img.width + j) * 4;
-            pixelSum +=
-              img.data[idx] +
-              img.data[idx + 1] +
-              img.data[idx + 2] +
-              img.data[idx + 3];
-          }
-        }
-        return pixelSum;
-      };
-
       let img = scatterplot.export();
 
       t.equal(
@@ -2932,6 +2918,68 @@ test('other methods', async (t2) => {
   );
 
   await t2.test(
+    'zoomToArea() with non-standard aspect ratio',
+    catchError(async (t) => {
+      const dims = [
+        [200, 200],
+        [200, 100],
+        [100, 200],
+        [333, 123],
+      ];
+      const aspectRatios = [1, 2, 0.3, 5 / 3];
+
+      const xStart = -8 / 6;
+      const xWidth = 5 + 8 / 6;
+      const yStart = -1 / 3;
+      const yWidth = 2 / 3;
+
+      const points = {
+        x: Array.from({ length: 500 }, (_, i) => xStart + (i / 499) * xWidth),
+        y: Array.from({ length: 500 }, (_, i) => yStart + (i / 499) * yWidth),
+      };
+
+      const rect = {
+        x: xStart - EPS,
+        width: xWidth + EPS * 2,
+        y: yStart - EPS,
+        height: yWidth + EPS * 2,
+      };
+
+      for (const [width, height] of dims) {
+        for (const aspectRatio of aspectRatios) {
+          const scatterplot = createScatterplot({
+            canvas: createCanvas(width, height),
+            aspectRatio,
+          });
+
+          // eslint-disable-next-line no-await-in-loop
+          await scatterplot.draw(points);
+          // eslint-disable-next-line no-await-in-loop
+          await scatterplot.zoomToArea(rect);
+
+          t.equal(
+            scatterplot.get('pointsInView').length,
+            500,
+            'should show all points'
+          );
+
+          t.ok(
+            Math.abs(scatterplot.getScreenPosition(0)[0]) < 0.01,
+            'first point should be close to zero'
+          );
+
+          t.ok(
+            Math.abs(scatterplot.getScreenPosition(499)[0] - width) < 0.01,
+            `last point should be close to ${width}`
+          );
+
+          scatterplot.destroy();
+        }
+      }
+    })
+  );
+
+  await t2.test(
     'getScreenPosition()',
     catchError(async (t) => {
       const scatterplot = createScatterplot({
@@ -3058,7 +3106,15 @@ test('other methods', async (t2) => {
 
       await scatterplot.draw({ x, y, z: z1 });
 
-      await scatterplot.zoomToArea({ x: 0, y: 0, width: 1, height: 1 });
+      await scatterplot.zoomToArea(
+        {
+          x: -EPS,
+          y: -EPS,
+          width: 1 + 2 * EPS,
+          height: 1 + 2 * EPS,
+        },
+        { log: true }
+      );
 
       t.equal(
         scatterplot.get('pointsInView'),
@@ -3072,7 +3128,12 @@ test('other methods', async (t2) => {
       // from the previous draw call.
       await scatterplot.draw({ x, y, z: z2 }, { spatialIndex });
 
-      await scatterplot.zoomToArea({ x: -1, y: -1, width: 1, height: 1 });
+      await scatterplot.zoomToArea({
+        x: -1 - EPS,
+        y: -1 - EPS,
+        width: 1 + 2 * EPS,
+        height: 1 + 2 * EPS,
+      });
 
       // The reused spatial index should work as before
       t.equal(
@@ -3080,6 +3141,89 @@ test('other methods', async (t2) => {
         [2, 3],
         'should have points #2 and #3 in the view'
       );
+
+      scatterplot.destroy();
+    })
+  );
+
+  await t2.test(
+    'drawAnnotations()',
+    catchError(async (t) => {
+      const scatterplot = createScatterplot({
+        canvas: createCanvas(100, 100),
+        width: 100,
+        height: 100,
+      });
+
+      await scatterplot.drawAnnotations([
+        { x: 0.9, lineColor: [1, 1, 1, 0.1], lineWidth: 1 },
+        { y: 0.9, lineColor: [1, 1, 1, 0.1], lineWidth: 1 },
+        {
+          x1: -0.8,
+          y1: -0.8,
+          x2: -0.6,
+          y2: -0.6,
+          lineColor: [1, 1, 1, 0.25],
+          lineWidth: 1,
+        },
+        {
+          x: -0.8,
+          y: 0.6,
+          width: 0.2,
+          height: 0.2,
+          lineColor: [1, 1, 1, 0.25],
+          lineWidth: 1,
+        },
+        {
+          vertices: [
+            [0.6, 0.8],
+            [0.8, 0.8],
+            [0.8, 0.6],
+            [0.6, 0.6],
+            [0.6, 0.8],
+          ],
+          lineColor: '#D55E00',
+          lineWidth: 2,
+        },
+      ]);
+
+      let img = scatterplot.export();
+      let w = img.width;
+      let h = img.height;
+      const wp = w * 0.1;
+      const hp = w * 0.1;
+
+      t.ok(
+        getPixelSum(img, 0, w, 0, hp) > 0,
+        'The horizontal line should be drawn'
+      );
+
+      t.ok(
+        getPixelSum(img, w - wp, w, 0, h) > 0,
+        'The vertical line should be drawn'
+      );
+
+      t.ok(
+        getPixelSum(img, wp, 2 * wp, h - hp * 2, h - hp) > 0,
+        'The bottom left rectangle should be drawn'
+      );
+
+      t.ok(
+        getPixelSum(img, wp, 2 * wp, hp, 2 * hp) > 0,
+        'The top left rectangle should be drawn'
+      );
+
+      t.ok(
+        getPixelSum(img, wp - 2 * wp, w - wp, hp, 2 * hp) > 0,
+        'The top right polygon should be drawn'
+      );
+
+      await scatterplot.clearAnnotations();
+
+      img = scatterplot.export();
+      w = img.width;
+      h = img.height;
+      t.ok(getPixelSum(img, 0, w, 0, h) === 0, 'Annotations should be cleared');
 
       scatterplot.destroy();
     })
