@@ -122,6 +122,9 @@ import {
   DEFAULT_ANNOTATION_LINE_COLOR,
   DEFAULT_ANNOTATION_LINE_WIDTH,
   DEFAULT_ANNOTATION_HVLINE_LIMIT,
+  LASSO_SELECTION,
+  DIRECTIONAL_SELECTION,
+  DEFAULT_SELECTION_TYPE,
 } from './constants';
 
 import {
@@ -272,6 +275,7 @@ const createScatterplot = (
     annotationLineColor = DEFAULT_ANNOTATION_LINE_COLOR,
     annotationLineWidth = DEFAULT_ANNOTATION_LINE_WIDTH,
     annotationHVLineLimit = DEFAULT_ANNOTATION_HVLINE_LIMIT,
+    selectionType = DEFAULT_SELECTION_TYPE,
   } = initialProperties;
 
   let currentWidth = width === AUTO ? 1 : width;
@@ -910,15 +914,6 @@ const createScatterplot = (
     pointNorm: ([x, y]) => getScatterGlPos(getNdcX(x), getNdcY(y)),
   });
 
-  // let lassoManager = createDirManager(canvas, {
-  //   onStart: dirStart,
-  //   onDraw: dirExtend,
-  //   onEnd: dirEnd,
-  //   enableInitiator: lassoInitiator,
-  //   initiatorParentElement: lassoInitiatorParentElement,
-  //   pointNorm: ([x, y]) => getScatterGlPos(getNdcX(x), getNdcY(y)),
-  // });
-
   const checkLassoMode = () => mouseMode === MOUSE_MODE_LASSO;
 
   const checkModKey = (event, action) => {
@@ -1309,6 +1304,31 @@ const createScatterplot = (
       computedPointSizeMouseDetection = Array.isArray(pointSize)
         ? maxArray(pointSize)
         : pointSize;
+    }
+  };
+
+  const createSelectionManager = () => {
+    lassoManager.destroy();
+    if (selectionType === LASSO_SELECTION) {
+      lassoManager = createLassoManager(canvas, {
+        onStart: lassoStart,
+        onDraw: lassoExtend,
+        onEnd: lassoEnd,
+        enableInitiator: lassoInitiator,
+        initiatorParentElement: lassoInitiatorParentElement,
+        pointNorm: ([x, y]) => getScatterGlPos(getNdcX(x), getNdcY(y)),
+      });
+    } else if (selectionType === DIRECTIONAL_SELECTION) {
+      lassoManager = createDirManager(canvas, {
+        onStart: dirStart,
+        onDraw: dirExtend,
+        onEnd: dirEnd,
+        enableInitiator: lassoInitiator,
+        initiatorParentElement: lassoInitiatorParentElement,
+        pointNorm: ([x, y]) => getScatterGlPos(getNdcX(x), getNdcY(y)),
+      });
+    } else {
+      throw new Error('Unknown selection manager type', { selectionType });
     }
   };
 
@@ -3106,6 +3126,11 @@ const createScatterplot = (
     annotationHVLineLimit = +newAnnotationHVLineLimit;
   };
 
+  const setSelectionType = (newSelectionType) => {
+    selectionType = newSelectionType;
+    createSelectionManager();
+  };
+
   const setGamma = (newGamma) => {
     renderer.gamma = newGamma;
   };
@@ -3224,6 +3249,7 @@ const createScatterplot = (
     if (property === 'annotationLineColor') return annotationLineColor;
     if (property === 'annotationLineWidth') return annotationLineWidth;
     if (property === 'annotationHVLineLimit') return annotationHVLineLimit;
+    if (property === 'selectionType') return selectionType;
 
     return undefined;
   };
@@ -3479,6 +3505,10 @@ const createScatterplot = (
 
     if (properties.annotationHVLineLimit !== undefined) {
       setAnnotationHVLineLimit(properties.annotationHVLineLimit);
+    }
+
+    if (properties.selectionType !== undefined) {
+      setSelectionType(properties.selectionType);
     }
 
     // setWidth and setHeight can be async when width or height are set to
@@ -3872,28 +3902,8 @@ const createScatterplot = (
      * @param {"lasso" | "directional"} type
      */
     setSelectionManager(type) {
-      lassoManager.destroy();
-      if (type === 'lasso') {
-        lassoManager = createLassoManager(canvas, {
-          onStart: lassoStart,
-          onDraw: lassoExtend,
-          onEnd: lassoEnd,
-          enableInitiator: lassoInitiator,
-          initiatorParentElement: lassoInitiatorParentElement,
-          pointNorm: ([x, y]) => getScatterGlPos(getNdcX(x), getNdcY(y)),
-        });
-      } else if (type === 'directional') {
-        lassoManager = createDirManager(canvas, {
-          onStart: dirStart,
-          onDraw: dirExtend,
-          onEnd: dirEnd,
-          enableInitiator: lassoInitiator,
-          initiatorParentElement: lassoInitiatorParentElement,
-          pointNorm: ([x, y]) => getScatterGlPos(getNdcX(x), getNdcY(y)),
-        });
-      } else {
-        throw new Error('Unknown type', { type });
-      }
+      selectionType = type;
+      createSelectionManager();
     },
   };
 };

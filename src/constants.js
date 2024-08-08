@@ -103,6 +103,11 @@ export const DEFAULT_KEY_MAP = {
   [KEY_CMD]: KEY_ACTION_MERGE,
 };
 
+// Selection types
+export const LASSO_SELECTION = 'lasso';
+export const DIRECTIONAL_SELECTION = 'directional';
+export const DEFAULT_SELECTION_TYPE = LASSO_SELECTION;
+
 // Default attribute
 export const DEFAULT_DATA_ASPECT_RATIO = 1;
 export const DEFAULT_WIDTH = AUTO;
