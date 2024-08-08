@@ -93,8 +93,7 @@ export const createDir = (
     onDraw: initialOnDraw = identity,
     onStart: initialOnStart = identity,
     onEnd: initialOnEnd = identity,
-    enableInitiator:
-      initialenableInitiator = DEFAULT_DIR_START_INITIATOR_SHOW,
+    enableInitiator: initialenableInitiator = DEFAULT_DIR_START_INITIATOR_SHOW,
     initiatorParentElement: initialInitiatorParentElement = document.body,
     longPressIndicatorParentElement:
       initialLongPressIndicatorParentElement = document.body,
@@ -513,7 +512,7 @@ export const createDir = (
 
     extendDb.cancel();
 
-    const dircenterPositions = [...dirPosCenter]
+    // const dircenterPositions = [...dirPosCenter]
 
     clear();
 
