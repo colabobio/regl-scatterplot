@@ -13,7 +13,7 @@ const pointSizeEl = document.querySelector('#point-size');
 const pointSizeValEl = document.querySelector('#point-size-value');
 const opacityEl = document.querySelector('#opacity');
 const opacityValEl = document.querySelector('#opacity-value');
-const clickLassoInitiatorEl = document.querySelector('#click-lasso-initiator');
+const clickSelectInitiatorEl = document.querySelector('#click-select-initiator');
 const resetEl = document.querySelector('#reset');
 const exportEl = document.querySelector('#export');
 const exampleEl = document.querySelector('#example-text-overlay');
@@ -62,15 +62,15 @@ let opacity = 1.0;
 let selection = [];
 
 const maxPointLabels = 200;
-const lassoMinDelay = 10;
-const lassoMinDist = 2;
+const selectMinDelay = 10;
+const selectMinDist = 2;
 const showReticle = true;
 const reticleColor = [1, 1, 0.878431373, 0.33];
 
 const scatterplot = createScatterplot({
   canvas,
-  lassoMinDelay,
-  lassoMinDist,
+  selectMinDelay,
+  selectMinDist,
   pointSize,
   showReticle,
   reticleColor,
@@ -78,7 +78,7 @@ const scatterplot = createScatterplot({
   yScale: scaleLinear().domain([-1, 1]),
   pointColor: '#fff',
   opacityBy: 'density',
-  lassoInitiator: true,
+  selectInitiator: true,
 });
 
 checkSupport(scatterplot);
@@ -193,17 +193,17 @@ const opacityInputHandler = (event) => setOpacity(+event.target.value);
 
 opacityEl.addEventListener('input', opacityInputHandler);
 
-const clickLassoInitiatorChangeHandler = (event) => {
+const clickSelectInitiatorChangeHandler = (event) => {
   scatterplot.set({
-    lassoInitiator: event.target.checked,
+    selectInitiator: event.target.checked,
   });
 };
 
-clickLassoInitiatorEl.addEventListener(
+clickSelectInitiatorEl.addEventListener(
   'change',
-  clickLassoInitiatorChangeHandler
+  clickSelectInitiatorChangeHandler
 );
-clickLassoInitiatorEl.checked = scatterplot.get('lassoInitiator');
+clickSelectInitiatorEl.checked = scatterplot.get('selectInitiator');
 
 const resetClickHandler = () => {
   scatterplot.reset();

@@ -10,10 +10,10 @@ type Value = 'value' | 'value2' | 'valueB' | 'valueW' | 'w';
 type DataEncoding = Category | Value;
 type PointDataEncoding = DataEncoding | 'inherit' | 'segment';
 
-type KeyAction = 'lasso' | 'rotate' | 'merge';
+type KeyAction = 'select' | 'rotate' | 'merge';
 type KeyMap = Record<'alt' | 'cmd' | 'ctrl' | 'meta' | 'shift', KeyAction>;
 
-type MouseMode = 'panZoom' | 'lasso' | 'rotate';
+type MouseMode = 'panZoom' | 'lasso' | 'directional' | 'rotate';
 
 type ZWDataType = 'continuous' | 'categorical';
 
@@ -56,12 +56,12 @@ type PointConnectionOptions = {
   sizeBy: null | PointDataEncoding;
 };
 
-type LassoOptions = {
+type SelectOptions = {
   color: Color;
   lineWidth: number;
   minDelay: number;
   minDist: number;
-  clearEvent: 'lassoEnd' | 'deselect';
+  clearEvent: 'selectionEnd' | 'deselect';
   initiator: boolean;
   initiatorParentElement: HTMLElement;
   onLongPress: boolean;
@@ -177,7 +177,7 @@ type WithPrefix<
 export type Settable = BaseOptions &
   WithPrefix<'point', PointOptions> &
   WithPrefix<'pointConnection', PointConnectionOptions> &
-  WithPrefix<'lasso', LassoOptions> &
+  WithPrefix<'select', SelectOptions> &
   WithPrefix<'camera', CameraOptions>;
 
 export type RendererOptions = {
@@ -192,7 +192,7 @@ export type Properties = {
   regl: import('regl').Regl;
   syncEvents: boolean;
   version: string;
-  lassoInitiatorElement: HTMLElement;
+  selectInitiatorElement: HTMLElement;
   camera: Camera2D;
   performanceMode: boolean;
   opacityByDensityDebounceTime: number;
@@ -260,13 +260,13 @@ export type Events = import('pub-sub-es').Event<
   | 'backgroundImageReady'
   | 'deselect'
   | 'unfilter'
-  | 'lassoStart'
+  | 'selectionStart'
   | 'transitionStart'
   | 'pointConnectionsDraw',
   undefined
 > &
   import('pub-sub-es').Event<
-    'lassoEnd' | 'lassoExtend',
+    'selectionEnd' | 'selectionExtend',
     { coordinates: number[] }
   > &
   import('pub-sub-es').Event<'pointOver' | 'pointOut', number> &

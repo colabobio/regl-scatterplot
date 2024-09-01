@@ -47,7 +47,7 @@ const pointSizeEl = document.querySelector('#point-size');
 const pointSizeValEl = document.querySelector('#point-size-value');
 const opacityEl = document.querySelector('#opacity');
 const opacityValEl = document.querySelector('#opacity-value');
-const clickLassoInitiatorEl = document.querySelector('#click-lasso-initiator');
+const clickSelectInitiatorEl = document.querySelector('#click-select-initiator');
 const resetEl = document.querySelector('#reset');
 const exportEl = document.querySelector('#export');
 const exampleEl = document.querySelector('#example-transition');
@@ -60,7 +60,7 @@ let pointSize = 1.5;
 const scatterplot = createScatterplot({
   canvas,
   pointSize,
-  lassoOnLongPress: true,
+  selectOnLongPress: true,
 });
 
 checkSupport(scatterplot);
@@ -86,17 +86,17 @@ const pointSizeInputHandler = (event) => setPointSize(+event.target.value);
 
 pointSizeEl.addEventListener('input', pointSizeInputHandler);
 
-const clickLassoInitiatorChangeHandler = (event) => {
+const clickSelectInitiatorChangeHandler = (event) => {
   scatterplot.set({
-    lassoInitiator: event.target.checked,
+    selectInitiator: event.target.checked,
   });
 };
 
-clickLassoInitiatorEl.addEventListener(
+clickSelectInitiatorEl.addEventListener(
   'change',
-  clickLassoInitiatorChangeHandler
+  clickSelectInitiatorChangeHandler
 );
-clickLassoInitiatorEl.checked = scatterplot.get('lassoInitiator');
+clickSelectInitiatorEl.checked = scatterplot.get('selectInitiator');
 
 const resetClickHandler = () => {
   scatterplot.reset();

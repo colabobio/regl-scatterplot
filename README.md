@@ -788,19 +788,19 @@ can be read and written via [`scatterplot.get()`](#scatterplot.get) and [`scatte
 | pointConnectionSizeBy                 | string                                       | `null`                              | See [data encoding](#property-point-conntection-by)             | `true`   | `false`     |
 | pointConnectionMaxIntPointsPerSegment | int                                          | `100`                               |                                                                 | `true`   | `false`     |
 | pointConnectionTolerance              | float                                        | `0.002`                             |                                                                 | `true`   | `false`     |
-| lassoColor                            | quadruple                                    | rgba(0, 0.667, 1, 1)                | hex, rgb, rgba                                                  | `true`   | `false`     |
-| lassoLineWidth                        | float                                        | 2                                   | >= 1                                                            | `true`   | `false`     |
-| lassoMinDelay                         | int                                          | 15                                  | >= 0                                                            | `true`   | `false`     |
-| lassoMinDist                          | int                                          | 4                                   | >= 0                                                            | `true`   | `false`     |
-| lassoClearEvent                       | string                                       | `'lassoEnd'`                        | `'lassoEnd'` or `'deselect'`                                    | `true`   | `false`     |
-| lassoInitiator                        | boolean                                      | `false`                             |                                                                 | `true`   | `false`     |
-| lassoInitiatorElement                 | object                                       | the lasso dom element               |                                                                 | `false`  | `false`     |
-| lassoInitiatorParentElement           | object                                       | `document.body`                     |                                                                 | `true`   | `false`     |
-| lassoOnLongPress                      | boolean                                      | `false`                             |                                                                 | `true`   | `false`     |
-| lassoLongPressTime                    | int                                          | `750`                               |                                                                 | `true`   | `false`     |
-| lassoLongPressAfterEffectTime         | int                                          | `500`                               |                                                                 | `true`   | `false`     |
-| lassoLongPressEffectDelay             | int                                          | `100`                               |                                                                 | `true`   | `false`     |
-| lassoLongPressRevertEffectTime        | int                                          | `250`                               |                                                                 | `true`   | `false`     |
+| selectColor                            | quadruple                                    | rgba(0, 0.667, 1, 1)                | hex, rgb, rgba                                                  | `true`   | `false`     |
+| selectLineWidth                        | float                                        | 2                                   | >= 1                                                            | `true`   | `false`     |
+| selectMinDelay                         | int                                          | 15                                  | >= 0                                                            | `true`   | `false`     |
+| selectMinDist                          | int                                          | 4                                   | >= 0                                                            | `true`   | `false`     |
+| selectClearEvent                       | string                                       | `'selectEnd'`                        | `'selectEnd'` or `'deselect'`                                    | `true`   | `false`     |
+| selectorInitiator                        | boolean                                      | `false`                             |                                                                 | `true`   | `false`     |
+| selectInitiatorElement                 | object                                       | the selector dom element               |                                                                 | `false`  | `false`     |
+| selectorInitiatorParentElement           | object                                       | `document.body`                     |                                                                 | `true`   | `false`     |
+| selectorOnLongPress                      | boolean                                      | `false`                             |                                                                 | `true`   | `false`     |
+| selectorLongPressTime                    | int                                          | `750`                               |                                                                 | `true`   | `false`     |
+| selectorLongPressAfterEffectTime         | int                                          | `500`                               |                                                                 | `true`   | `false`     |
+| selectorLongPressEffectDelay             | int                                          | `100`                               |                                                                 | `true`   | `false`     |
+| selectorLongPressRevertEffectTime        | int                                          | `250`                               |                                                                 | `true`   | `false`     |
 | showReticle                           | boolean                                      | `false`                             | `true` or `false`                                               | `true`   | `false`     |
 | reticleColor                          | quadruple                                    | rgba(1, 1, 1, .5)                   | hex, rgb, rgba                                                  | `true`   | `false`     |
 | xScale                                | function                                     | `null`                              | must follow the D3 scale API                                    | `true`   | `true`      |
@@ -975,15 +975,15 @@ scatterplot.set({ pointSize: 10 });
 // Set the additional point size of selected points
 scatterplot.set({ pointSizeSelected: 2 });
 
-// Change the lasso color and make it very smooth, i.e., do not wait before
-// extending the lasso (i.e., `lassoMinDelay = 0`) and extend the lasso when
-// the mouse moves at least 1 pixel
+// Change the select color and make it very smooth, i.e., do not wait before
+// extending the selection (i.e., `selectMinDelay = 0`) and extend the selection 
+// when the mouse moves at least 1 pixel
 scatterplot.set({
-  lassoColor: [1, 1, 1, 1],
-  lassoMinDelay: 0,
-  lassoMinDist: 1,
+  selectColor: [1, 1, 1, 1],
+  selectMinDelay: 0,
+  selectMinDist: 1,
   // This will keep the drawn lasso until the selected points are deselected
-  lassoClearEvent: 'deselect',
+  selectClearEvent: 'deselect',
 });
 
 // Activate reticle and set reticle color to red
@@ -1050,9 +1050,9 @@ Render Regl draw instructions into a target canvas using the renderer.
 | view                 | when the view has changes                  | `{ camera, view, xScale, yScale }` |
 | draw                 | when the plot was drawn                    | `{ camera, view, xScale, yScale }` |
 | drawing              | when the plot is being drawn               | `{ camera, view, xScale, yScale }` |
-| lassoStart           | when the lasso selection has started       | `undefined`                        |
-| lassoExtend          | when the lasso selection has extended      | `{ coordinates }`                  |
-| lassoEnd             | when the lasso selection has ended         | `{ coordinates }`                  |
+| selectionStart       | when the point selection has started       | `undefined`                        |
+| selectionExtend      | when the point selection has extended      | `{ coordinates }`                  |
+| selectionEnd         | when the point selection has ended         | `{ coordinates }`                  |
 | transitionStart      | when points started to transition          | `undefined`                        |
 | transitionEnd        | when points ended to transition            | `createRegl(canvas)`               |
 | pointConnectionsDraw | when point connections were drawn          | `undefined`                        |

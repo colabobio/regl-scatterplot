@@ -2,7 +2,7 @@
 
 import createScatterplot from '../src';
 import { saveAsPng, checkSupport } from './utils';
-
+import { DIRECTIONAL_SELECTION, LASSO_SELECTION } from '../src/constants';
 
 const canvas = document.querySelector('#canvas');
 const numPointsEl = document.querySelector('#num-points');
@@ -11,7 +11,7 @@ const pointSizeEl = document.querySelector('#point-size');
 const pointSizeValEl = document.querySelector('#point-size-value');
 const opacityEl = document.querySelector('#opacity');
 const opacityValEl = document.querySelector('#opacity-value');
-const clickLassoInitiatorEl = document.querySelector('#click-lasso-initiator');
+const clickSelectInitiatorEl = document.querySelector('#click-select-initiator');
 const clickSelectionModeEl = document.querySelector('#selection-mode');
 const resetEl = document.querySelector('#reset');
 const exportEl = document.querySelector('#export');
@@ -26,8 +26,8 @@ let pointSize = 2;
 let opacity = 0.33;
 let selection = [];
 
-const lassoMinDelay = 10;
-const lassoMinDist = 2;
+const selectMinDelay = 10;
+const selectMinDist = 2;
 const showReticle = true;
 const reticleColor = [1, 1, 0.878431373, 0.33];
 
@@ -74,12 +74,12 @@ const deselectHandler = () => {
 
 const scatterplot = createScatterplot({
   canvas,
-  lassoMinDelay,
-  lassoMinDist,
+  selectMinDelay,
+  selectMinDist,
   pointSize,
   showReticle,
   reticleColor,
-  lassoInitiator: true,
+  selectInitiator: true,
 });
 
 checkSupport(scatterplot);
@@ -141,17 +141,17 @@ const opacityInputHandler = (event) => setOpacity(+event.target.value);
 
 opacityEl.addEventListener('input', opacityInputHandler);
 
-const clickLassoInitiatorChangeHandler = (event) => {
+const clickSelectInitiatorChangeHandler = (event) => {
   scatterplot.set({
-    lassoInitiator: event.target.checked,
+    selectInitiator: event.target.checked,
   });
 };
 
-clickLassoInitiatorEl.addEventListener(
+clickSelectInitiatorEl.addEventListener(
   'change',
-  clickLassoInitiatorChangeHandler
+  clickSelectInitiatorChangeHandler
 );
-clickLassoInitiatorEl.checked = scatterplot.get('lassoInitiator');
+clickSelectInitiatorEl.checked = scatterplot.get('selectInitiator');
 
 const resetClickHandler = () => {
   scatterplot.reset();
@@ -160,10 +160,10 @@ const resetClickHandler = () => {
 resetEl.addEventListener('click', resetClickHandler);
 
 clickSelectionModeEl.addEventListener('change', (event) => {
-  const directionType = event.target.value; // Directional, Lasso
-  console.log("setting selection mode ", directionType)
+  const selectionType = event.target.value; // Directional, Lasso
+  console.log("setting selection mode ", selectionType)
   scatterplot.setSelectionManager(
-    directionType === "Directional" ? "directional" : "lasso"
+    selectionType === "Directional" ? DIRECTIONAL_SELECTION : LASSO_SELECTION
   )
 })
 
@@ -193,7 +193,7 @@ const colorsScale = [
   '#ffffe0', // bright yellow
 ];
 scatterplot.set({ colorBy: 'value', pointColor: colorsScale });
-scatterplot.subscribe("lassoEnd", (lassodata) => { console.log(lassodata) });
+scatterplot.subscribe("selectionEnd", (seldata) => { console.log(seldata) });
 scatterplot.subscribe("dirEnd", (data) => { console.log(data) });
 
 setPointSize(pointSize);

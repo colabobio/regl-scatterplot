@@ -28,11 +28,13 @@ export const CLEAR_OPTIONS = {
 };
 
 export const MOUSE_MODE_PANZOOM = 'panZoom';
-export const MOUSE_MODE_LASSO = 'lasso';
+export const MOUSE_MODE_SELECT_LASSO = 'lasso';
+export const MOUSE_MODE_SELECT_DIRECTIONAL = 'directional';
 export const MOUSE_MODE_ROTATE = 'rotate';
 export const MOUSE_MODES = [
   MOUSE_MODE_PANZOOM,
-  MOUSE_MODE_LASSO,
+  MOUSE_MODE_SELECT_LASSO,
+  MOUSE_MODE_SELECT_DIRECTIONAL,
   MOUSE_MODE_ROTATE,
 ];
 export const DEFAULT_MOUSE_MODE = MOUSE_MODE_PANZOOM;
@@ -53,41 +55,29 @@ export const CONTINUOUS = 'continuous';
 export const CATEGORICAL = 'categorical';
 export const VALUE_ZW_DATA_TYPES = [CONTINUOUS, CATEGORICAL];
 
-// Default lasso
-export const LASSO_CLEAR_ON_DESELECT = 'deselect';
-export const LASSO_CLEAR_ON_END = 'lassoEnd';
-export const LASSO_CLEAR_EVENTS = [LASSO_CLEAR_ON_DESELECT, LASSO_CLEAR_ON_END];
-export const DEFAULT_LASSO_COLOR = [0, 0.666666667, 1, 1];
-export const DEFAULT_LASSO_LINE_WIDTH = 2;
-export const DEFAULT_LASSO_INITIATOR = false;
-export const DEFAULT_LASSO_INITIATOR_BACKGROUND = 'rgba(255, 255, 255, 0.1)';
-export const DEFAULT_LASSO_MIN_DELAY = 10;
-export const DEFAULT_LASSO_MIN_DIST = 3;
-export const DEFAULT_LASSO_CLEAR_EVENT = LASSO_CLEAR_ON_END;
-export const DEFAULT_LASSO_ON_LONG_PRESS = false;
-export const DEFAULT_LASSO_LONG_PRESS_TIME = 750;
-export const DEFAULT_LASSO_LONG_PRESS_AFTER_EFFECT_TIME = 500;
-export const DEFAULT_LASSO_LONG_PRESS_EFFECT_DELAY = 100;
-export const DEFAULT_LASSO_LONG_PRESS_REVERT_EFFECT_TIME = 250;
-
-// Dir constants
-export const DEFAULT_DIR_START_INITIATOR_SHOW = true;
-export const DEFAULT_DIR_MIN_DELAY = 8;
-export const DEFAULT_DIR_MIN_DIST = 2;
-export const DIR_SHOW_START_INITIATOR_TIME = 2500;
-export const DIR_HIDE_START_INITIATOR_TIME = 250;
-
-export const DEFAULT_DIR_LONG_PRESS_TIME = 750;
-export const DEFAULT_DIR_LONG_PRESS_AFTER_EFFECT_TIME = 500;
-export const DEFAULT_DIR_LONG_PRESS_EFFECT_DELAY = 100;
-export const DEFAULT_DIR_LONG_PRESS_REVERT_EFFECT_TIME = 250;
+// Default selection parameters 
+export const SELECT_CLEAR_ON_DESELECT = 'deselect';
+export const SELECT_CLEAR_ON_END = 'selectionEnd';
+export const SELECT_CLEAR_EVENTS = [SELECT_CLEAR_ON_DESELECT, SELECT_CLEAR_ON_END];
+export const DEFAULT_SELECT_COLOR = [0, 0.666666667, 1, 1];
+export const DEFAULT_SELECT_LINE_WIDTH = 2;
+export const DEFAULT_SELECT_INITIATOR = false;
+export const DEFAULT_SELECT_INITIATOR_BACKGROUND = 'rgba(255, 255, 255, 0.1)';
+export const DEFAULT_SELECT_MIN_DELAY = 10;
+export const DEFAULT_SELECT_MIN_DIST = 3;
+export const DEFAULT_SELECT_CLEAR_EVENT = SELECT_CLEAR_ON_END;
+export const DEFAULT_SELECT_ON_LONG_PRESS = false;
+export const DEFAULT_SELECT_LONG_PRESS_TIME = 750;
+export const DEFAULT_SELECT_LONG_PRESS_AFTER_EFFECT_TIME = 500;
+export const DEFAULT_SELECT_LONG_PRESS_EFFECT_DELAY = 100;
+export const DEFAULT_SELECT_LONG_PRESS_REVERT_EFFECT_TIME = 250;
 
 // Key mapping
-export const KEY_ACTION_LASSO = 'lasso';
+export const KEY_ACTION_SELECT = 'select';
 export const KEY_ACTION_ROTATE = 'rotate';
 export const KEY_ACTION_MERGE = 'merge';
 export const KEY_ACTIONS = [
-  KEY_ACTION_LASSO,
+  KEY_ACTION_SELECT,
   KEY_ACTION_ROTATE,
   KEY_ACTION_MERGE,
 ];
@@ -99,7 +89,7 @@ export const KEY_SHIFT = 'shift';
 export const KEYS = [KEY_ALT, KEY_CMD, KEY_CTRL, KEY_META, KEY_SHIFT];
 export const DEFAULT_KEY_MAP = {
   [KEY_ALT]: KEY_ACTION_ROTATE,
-  [KEY_SHIFT]: KEY_ACTION_LASSO,
+  [KEY_SHIFT]: KEY_ACTION_SELECT,
   [KEY_CMD]: KEY_ACTION_MERGE,
 };
 

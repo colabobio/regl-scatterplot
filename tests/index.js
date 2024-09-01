@@ -21,8 +21,8 @@ import {
   DEFAULT_COLOR_ACTIVE,
   DEFAULT_COLOR_HOVER,
   DEFAULT_COLOR_BG,
-  DEFAULT_HEIGHT,
-  DEFAULT_LASSO_COLOR,
+  DEFAULT_HEIGHT,  
+  DEFAULT_SELECT_COLOR,
   DEFAULT_SHOW_RETICLE,
   DEFAULT_RETICLE_COLOR,
   DEFAULT_POINT_OUTLINE_WIDTH,
@@ -31,15 +31,15 @@ import {
   DEFAULT_OPACITY_INACTIVE_MAX,
   DEFAULT_OPACITY_INACTIVE_SCALE,
   DEFAULT_WIDTH,
-  DEFAULT_LASSO_MIN_DELAY,
-  DEFAULT_LASSO_MIN_DIST,
-  DEFAULT_LASSO_CLEAR_EVENT,
+  DEFAULT_SELECT_MIN_DELAY,
+  DEFAULT_SELECT_MIN_DIST,
+  DEFAULT_SELECT_CLEAR_EVENT,
   DEFAULT_POINT_CONNECTION_OPACITY,
   DEFAULT_POINT_CONNECTION_OPACITY_ACTIVE,
   DEFAULT_POINT_CONNECTION_SIZE,
   DEFAULT_POINT_CONNECTION_SIZE_ACTIVE,
   DEFAULT_GAMMA,
-  KEY_ACTION_LASSO,
+  KEY_ACTION_SELECT,
   KEY_ACTION_ROTATE,
   SINGLE_CLICK_DELAY,
   DEFAULT_OPACITY,
@@ -934,91 +934,91 @@ test('get() and set()', async (t2) => {
   );
 
   await t2.test(
-    'set({ lassoColor, lassoMinDist, lassoMinDelay, lassoClearEvent })',
+    'set({ selectColor, selectMinDist, selectMinDelay, selectClearEvent })',
     catchError(async (t) => {
       const scatterplot = createScatterplot({ canvas: createCanvas() });
 
-      // Check default lasso color, min distance, and min delay
+      // Check default selection color, min distance, and min delay
       t.equal(
-        scatterplot.get('lassoColor'),
-        DEFAULT_LASSO_COLOR,
-        `lassoColor should be set to ${DEFAULT_LASSO_COLOR}`
+        scatterplot.get('selectColor'),
+        DEFAULT_SELECT_COLOR,
+        `selectColor should be set to ${DEFAULT_SELECT_COLOR}`
       );
       t.equal(
-        scatterplot.get('lassoMinDist'),
-        DEFAULT_LASSO_MIN_DIST,
-        `lassoMinDist should be set to ${DEFAULT_LASSO_MIN_DIST}`
+        scatterplot.get('selectMinDist'),
+        DEFAULT_SELECT_MIN_DIST,
+        `selectMinDist should be set to ${DEFAULT_SELECT_MIN_DIST}`
       );
       t.equal(
-        scatterplot.get('lassoMinDelay'),
-        DEFAULT_LASSO_MIN_DELAY,
-        `lassoMinDelay should be set to ${DEFAULT_LASSO_MIN_DELAY}`
+        scatterplot.get('selectMinDelay'),
+        DEFAULT_SELECT_MIN_DELAY,
+        `selectMinDelay should be set to ${DEFAULT_SELECT_MIN_DELAY}`
       );
       t.equal(
-        scatterplot.get('lassoClearEvent'),
-        DEFAULT_LASSO_CLEAR_EVENT,
-        `lassoClearEvent should be set to ${DEFAULT_LASSO_CLEAR_EVENT}`
+        scatterplot.get('selectClearEvent'),
+        DEFAULT_SELECT_CLEAR_EVENT,
+        `selectClearEvent should be set to ${DEFAULT_SELECT_CLEAR_EVENT}`
       );
 
-      const lassoColor = [1, 0, 0, 1];
-      const lassoMinDist = 10;
-      const lassoMinDelay = 150;
-      const lassoClearEvent = 'deselect';
+      const selectColor = [1, 0, 0, 1];
+      const selectMinDist = 10;
+      const selectMinDelay = 150;
+      const selectClearEvent = 'deselect';
 
       scatterplot.set({
-        lassoColor,
-        lassoMinDist,
-        lassoMinDelay,
-        lassoClearEvent,
+        selectColor,
+        selectMinDist,
+        selectMinDelay,
+        selectClearEvent,
       });
 
       t.equal(
-        scatterplot.get('lassoColor'),
-        lassoColor,
-        `lassoColor should be set to ${lassoColor}`
+        scatterplot.get('selectColor'),
+        selectColor,
+        `selectColor should be set to ${selectColor}`
       );
       t.equal(
-        scatterplot.get('lassoMinDist'),
-        lassoMinDist,
-        `lassoMinDist should be set to ${lassoMinDist}`
+        scatterplot.get('selectMinDist'),
+        selectMinDist,
+        `selectMinDist should be set to ${selectMinDist}`
       );
       t.equal(
-        scatterplot.get('lassoMinDelay'),
-        lassoMinDelay,
-        `lassoMinDelay should be set to ${lassoMinDelay}`
+        scatterplot.get('selectMinDelay'),
+        selectMinDelay,
+        `selectMinDelay should be set to ${selectMinDelay}`
       );
       t.equal(
-        scatterplot.get('lassoClearEvent'),
-        lassoClearEvent,
-        `lassoClearEvent should be set to ${lassoClearEvent}`
+        scatterplot.get('selectClearEvent'),
+        selectClearEvent,
+        `selectClearEvent should be set to ${selectClearEvent}`
       );
 
       scatterplot.set({
-        lassoColor: null,
-        lassoMinDist: null,
-        lassoMinDelay: null,
-        lassoClearEvent: null,
+        selectColor: null,
+        selectMinDist: null,
+        selectMinDelay: null,
+        selectClearEvent: null,
       });
 
       t.equal(
-        scatterplot.get('lassoColor'),
-        lassoColor,
-        'lassoColor should not be nullifyable'
+        scatterplot.get('selectColor'),
+        selectColor,
+        'selectColor should not be nullifyable'
       );
       t.equal(
-        scatterplot.get('lassoMinDist'),
-        lassoMinDist,
-        'lassoMinDist should not be nullifyable'
+        scatterplot.get('selectMinDist'),
+        selectMinDist,
+        'selectMinDist should not be nullifyable'
       );
       t.equal(
-        scatterplot.get('lassoMinDelay'),
-        lassoMinDelay,
-        'lassoMinDelay should not be nullifyable'
+        scatterplot.get('selectMinDelay'),
+        selectMinDelay,
+        'selectMinDelay should not be nullifyable'
       );
       t.equal(
-        scatterplot.get('lassoClearEvent'),
-        lassoClearEvent,
-        'lassoClearEvent should not be nullifyable'
+        scatterplot.get('selectClearEvent'),
+        selectClearEvent,
+        'selectClearEvent should not be nullifyable'
       );
 
       scatterplot.destroy();
@@ -1576,10 +1576,10 @@ test('tests involving mouse events', async (t2) => {
       t.equal(selectedPoints.length, 0, 'should have deselected one point');
 
       // Test that mousedown + mousemove + click is not interpreted as a click when
-      // the cursor moved more than `DEFAULT_LASSO_MIN_DIST` in between mousedown and
+      // the cursor moved more than `DEFAULT_SELECT_MIN_DIST` in between mousedown and
       // mouseup
       canvas.dispatchEvent(
-        createMouseEvent('mousedown', hdim - DEFAULT_LASSO_MIN_DIST, hdim, {
+        createMouseEvent('mousedown', hdim - DEFAULT_SELECT_MIN_DIST, hdim, {
           buttons: 1,
         })
       );
@@ -1606,7 +1606,7 @@ test('tests involving mouse events', async (t2) => {
   );
 
   await t2.test(
-    'lasso selection (with events: select, lassoStart, lassoExtend, and lassoEnd)',
+    'lasso selection (with events: select, selectionStart, selectionExtend, and selectionEnd)',
     catchError(async (t) => {
       const dim = 200;
       const hdim = dim / 2;
@@ -1640,15 +1640,15 @@ test('tests involving mouse events', async (t2) => {
       let lassoExtendCount = 0;
       let lassoEndCount = 0;
       let lassoEndCoordinates = [];
-      scatterplot.subscribe('lassoStart', () => ++lassoStartCount);
-      scatterplot.subscribe('lassoExtend', () => ++lassoExtendCount);
-      scatterplot.subscribe('lassoEnd', ({ coordinates }) => {
+      scatterplot.subscribe('selectionStart', () => ++lassoStartCount);
+      scatterplot.subscribe('selectionExtend', () => ++lassoExtendCount);
+      scatterplot.subscribe('selectionEnd', ({ coordinates }) => {
         ++lassoEndCount;
         lassoEndCoordinates = coordinates;
       });
 
       const [lassoKey] = Object.entries(scatterplot.get('keyMap')).find(
-        (mapping) => mapping[1] === KEY_ACTION_LASSO
+        (mapping) => mapping[1] === KEY_ACTION_SELECT
       );
 
       // Test multi selections via mousedown + mousemove
@@ -1675,7 +1675,7 @@ test('tests involving mouse events', async (t2) => {
 
       await asyncForEach(mousePositions, async (mousePosition) => {
         window.dispatchEvent(createMouseEvent('mousemove', ...mousePosition));
-        await wait(DEFAULT_LASSO_MIN_DELAY + 5);
+        await wait(DEFAULT_SELECT_MIN_DELAY + 5);
       });
 
       window.dispatchEvent(createMouseEvent('mouseup'));
@@ -1727,7 +1727,7 @@ test('tests involving mouse events', async (t2) => {
       });
 
       let lassoStartCount = 0;
-      scatterplot.subscribe('lassoStart', () => ++lassoStartCount);
+      scatterplot.subscribe('selectionStart', () => ++lassoStartCount);
 
       t.equal(
         0,
@@ -1762,7 +1762,7 @@ test('tests involving mouse events', async (t2) => {
 
       await asyncForEach(mousePositions, async (mousePosition) => {
         window.dispatchEvent(createMouseEvent('mousemove', ...mousePosition));
-        await wait(DEFAULT_LASSO_MIN_DELAY + 5);
+        await wait(DEFAULT_SELECT_MIN_DELAY + 5);
       });
 
       window.dispatchEvent(createMouseEvent('mouseup'));
@@ -1791,7 +1791,7 @@ test('tests involving mouse events', async (t2) => {
         canvas,
         width: dim,
         height: dim,
-        lassoInitiator: false,
+        selectInitiator: false,
       });
 
       await scatterplot.draw([
@@ -1807,18 +1807,18 @@ test('tests involving mouse events', async (t2) => {
         selectedPoints = [...newSelectedPoints];
       });
 
-      const lassoIniatorElement = scatterplot.get('lassoInitiatorElement');
+      const selectIniatorElement = scatterplot.get('selectInitiatorElement');
 
       t.ok(
-        scatterplot.get('lassoInitiator') === false,
+        scatterplot.get('selectInitiator') === false,
         'lasso initiator should be inactive'
       );
       t.ok(
-        lassoIniatorElement.id.startsWith('lasso-initiator'),
+        selectIniatorElement.id.startsWith('lasso-initiator'),
         'lasso initiator element should exist'
       );
       t.equal(
-        scatterplot.get('lassoInitiatorParentElement'),
+        scatterplot.get('selectInitiatorParentElement'),
         document.body,
         'lasso initiator parent element should be the document body'
       );
@@ -1829,7 +1829,7 @@ test('tests involving mouse events', async (t2) => {
       // the circle to appear
       await wait(SINGLE_CLICK_DELAY + 50);
 
-      lassoIniatorElement.dispatchEvent(
+      selectIniatorElement.dispatchEvent(
         createMouseEvent('mousedown', dim * 1.125, hdim, { buttons: 1 })
       );
       await wait(0);
@@ -1847,7 +1847,7 @@ test('tests involving mouse events', async (t2) => {
 
       await asyncForEach(mousePositions, async (mousePosition) => {
         window.dispatchEvent(createMouseEvent('mousemove', ...mousePosition));
-        await wait(DEFAULT_LASSO_MIN_DELAY + 5);
+        await wait(DEFAULT_SELECT_MIN_DELAY + 5);
       });
 
       window.dispatchEvent(createMouseEvent('mouseup'));
@@ -1856,12 +1856,12 @@ test('tests involving mouse events', async (t2) => {
 
       t.deepEqual(selectedPoints, [], 'should have not selected anything');
 
-      scatterplot.set({ lassoInitiator: true });
+      scatterplot.set({ selectInitiator: true });
 
       await wait(0);
 
       t.ok(
-        scatterplot.get('lassoInitiator'),
+        scatterplot.get('selectInitiator'),
         'lasso initiator should be active'
       );
 
@@ -1875,14 +1875,14 @@ test('tests involving mouse events', async (t2) => {
       // the circle to appear
       await wait(SINGLE_CLICK_DELAY + 50);
 
-      lassoIniatorElement.dispatchEvent(
+      selectIniatorElement.dispatchEvent(
         createMouseEvent('mousedown', dim * 1.125, hdim, { buttons: 1 })
       );
       await wait(0);
 
       await asyncForEach(mousePositions, async (mousePosition) => {
         window.dispatchEvent(createMouseEvent('mousemove', ...mousePosition));
-        await wait(DEFAULT_LASSO_MIN_DELAY + 5);
+        await wait(DEFAULT_SELECT_MIN_DELAY + 5);
       });
 
       window.dispatchEvent(createMouseEvent('mouseup'));
@@ -1958,7 +1958,7 @@ test('tests involving mouse events', async (t2) => {
 
       await asyncForEach(mousePositions, async (mousePosition) => {
         window.dispatchEvent(createMouseEvent('mousemove', ...mousePosition));
-        await wait(DEFAULT_LASSO_MIN_DELAY + 5);
+        await wait(DEFAULT_SELECT_MIN_DELAY + 5);
       });
 
       // We need to ensure that the camera's tick() function was called before
@@ -2018,7 +2018,7 @@ test('tests involving mouse events', async (t2) => {
 
       await asyncForEach(mousePositions, async (mousePosition) => {
         window.dispatchEvent(createMouseEvent('mousemove', ...mousePosition));
-        await wait(DEFAULT_LASSO_MIN_DELAY + 5);
+        await wait(DEFAULT_SELECT_MIN_DELAY + 5);
       });
 
       // We need to ensure that the camera's tick() function was called before
@@ -2070,7 +2070,7 @@ test('tests involving mouse events', async (t2) => {
 
       await asyncForEach(mousePositions, async (mousePosition) => {
         window.dispatchEvent(createMouseEvent('mousemove', ...mousePosition));
-        await wait(DEFAULT_LASSO_MIN_DELAY + 5);
+        await wait(DEFAULT_SELECT_MIN_DELAY + 5);
       });
 
       // We need to ensure that the camera's tick() function was called before

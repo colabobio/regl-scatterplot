@@ -18,10 +18,11 @@ import {
 } from './constants';
 
 import {
-  DEFAULT_LASSO_LONG_PRESS_TIME,
-  DEFAULT_LASSO_LONG_PRESS_AFTER_EFFECT_TIME,
-  DEFAULT_LASSO_LONG_PRESS_EFFECT_DELAY,
-  DEFAULT_LASSO_LONG_PRESS_REVERT_EFFECT_TIME,
+  DEFAULT_SELECT_LONG_PRESS_TIME,
+  DEFAULT_SELECT_LONG_PRESS_AFTER_EFFECT_TIME,
+  DEFAULT_SELECT_LONG_PRESS_EFFECT_DELAY,
+  DEFAULT_SELECT_LONG_PRESS_REVERT_EFFECT_TIME,
+  LASSO_SELECTION,
 } from '../constants';
 
 import createLongPressElements from './create-long-press-elements';
@@ -256,13 +257,13 @@ export const createLasso = (
     x,
     y,
     {
-      time = DEFAULT_LASSO_LONG_PRESS_TIME,
-      extraTime = DEFAULT_LASSO_LONG_PRESS_AFTER_EFFECT_TIME,
-      delay = DEFAULT_LASSO_LONG_PRESS_EFFECT_DELAY,
+      time = DEFAULT_SELECT_LONG_PRESS_TIME,
+      extraTime = DEFAULT_SELECT_LONG_PRESS_AFTER_EFFECT_TIME,
+      delay = DEFAULT_SELECT_LONG_PRESS_EFFECT_DELAY,
     } = {
-      time: DEFAULT_LASSO_LONG_PRESS_TIME,
-      extraTime: DEFAULT_LASSO_LONG_PRESS_AFTER_EFFECT_TIME,
-      delay: DEFAULT_LASSO_LONG_PRESS_EFFECT_DELAY,
+      time: DEFAULT_SELECT_LONG_PRESS_TIME,
+      extraTime: DEFAULT_SELECT_LONG_PRESS_AFTER_EFFECT_TIME,
+      delay: DEFAULT_SELECT_LONG_PRESS_EFFECT_DELAY,
     }
   ) => {
     longPressIsStarting = true;
@@ -334,8 +335,8 @@ export const createLasso = (
   };
 
   const hideLongPressIndicator = (
-    { time = DEFAULT_LASSO_LONG_PRESS_REVERT_EFFECT_TIME } = {
-      time: DEFAULT_LASSO_LONG_PRESS_REVERT_EFFECT_TIME,
+    { time = DEFAULT_SELECT_LONG_PRESS_REVERT_EFFECT_TIME } = {
+      time: DEFAULT_SELECT_LONG_PRESS_REVERT_EFFECT_TIME,
     }
   ) => {
     if (!longPressIsStarting) return;
@@ -457,6 +458,8 @@ export const createLasso = (
     return extend(mousePosition);
   };
 
+  const type = () => LASSO_SELECTION;  
+
   const clear = () => {
     lassoPos = [];
     lassoPosFlat = [];
@@ -556,14 +559,15 @@ export const createLasso = (
   const withPublicMethods = () => (self) =>
     assign(self, {
       clear,
-      destroy,
+      destroy,      
       end,
+      type,
       extend: extendPublic,
       set,
       showInitiator,
       hideInitiator,
       showLongPressIndicator,
-      hideLongPressIndicator,
+      hideLongPressIndicator,      
     });
 
   initiatorParentElement.appendChild(initiator);

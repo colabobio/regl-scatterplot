@@ -2,6 +2,7 @@
 import { tableFromIPC } from 'apache-arrow';
 import createScatterplot, { createRenderer } from '../src';
 import { showModal, closeModal } from './utils';
+import { DIRECTIONAL_SELECTION, LASSO_SELECTION } from '../src/constants';
 
 /**
  * General configuration
@@ -10,7 +11,7 @@ const NUM_COLUMNS = 2;
 const NUM_ROWS = 2;
 const POINT_SIZE = 3;
 const OPACITY = 0.66;
-const LASSO_INITIATOR = true;
+const SELECT_INITIATOR = true;
 const FASHION_MNIST_CLASS_LABELS = [
   'T-shirt/top',
   'Trouser',
@@ -144,7 +145,7 @@ const pointSizeEl = document.querySelector('#point-size');
 const pointSizeValEl = document.querySelector('#point-size-value');
 const opacityEl = document.querySelector('#opacity');
 const opacityValEl = document.querySelector('#opacity-value');
-const clickLassoInitiatorEl = document.querySelector('#click-lasso-initiator');
+const clickSelectInitiatorEl = document.querySelector('#click-select-initiator');
 const resetEl = document.querySelector('#reset');
 const exampleEl = document.querySelector('#example-multiple-instances');
 const clickSelectionModeEl = document.querySelector('#selection-mode');
@@ -174,7 +175,7 @@ const scatterplots = canvases.map((canvas) =>
     canvas,
     pointSize: POINT_SIZE,
     opacity: OPACITY,
-    lassoOnLongPress: true,
+    selectOnLongPress: true,
   })
 );
 
@@ -210,17 +211,17 @@ opacityEl.addEventListener('input', opacityInputHandler);
 
 setOpacity(scatterplots[0].get('opacity'));
 
-const clickLassoInitiatorChangeHandler = (event) => {
+const clickSelectInitiatorChangeHandler = (event) => {
   scatterplots.forEach((sp) =>
-    sp.set({ lassoInitiator: event.target.checked })
+    sp.set({ selectInitiator: event.target.checked })
   );
 };
 
-clickLassoInitiatorEl.addEventListener(
+clickSelectInitiatorEl.addEventListener(
   'change',
-  clickLassoInitiatorChangeHandler
+  clickSelectInitiatorChangeHandler
 );
-clickLassoInitiatorEl.checked = scatterplots[0].get('lassoInitiator');
+clickSelectInitiatorEl.checked = scatterplots[0].get('selectInitiator');
 
 const resetClickHandler = () => {
   scatterplots.forEach((sp) => sp.reset());
@@ -228,13 +229,12 @@ const resetClickHandler = () => {
 resetEl.addEventListener('click', resetClickHandler);
 
 clickSelectionModeEl.addEventListener('change', (event) => {
-  const directionType = event.target.value; // Directional, Lasso
-  console.log("setting selection mode ", directionType)
+  const selectionType = event.target.value; // Directional, Lasso
+  console.log("setting selection mode ", selectionType)
   scatterplot.setSelectionManager(
-    directionType === "Directional" ? "directional" : "lasso"
+    selectionType === "Directional" ? DIRECTIONAL_SELECTION : LASSO_SELECTION
   )
 })
-
 
 
 /**

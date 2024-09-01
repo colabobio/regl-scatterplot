@@ -1,8 +1,8 @@
 import {
-  DEFAULT_LASSO_LONG_PRESS_TIME,
-  DEFAULT_LASSO_LONG_PRESS_AFTER_EFFECT_TIME,
-  DEFAULT_LASSO_LONG_PRESS_EFFECT_DELAY,
-  DEFAULT_LASSO_LONG_PRESS_REVERT_EFFECT_TIME,
+  DEFAULT_SELECT_LONG_PRESS_TIME,
+  DEFAULT_SELECT_LONG_PRESS_AFTER_EFFECT_TIME,
+  DEFAULT_SELECT_LONG_PRESS_EFFECT_DELAY,
+  DEFAULT_SELECT_LONG_PRESS_REVERT_EFFECT_TIME,
 } from '../constants';
 
 const getInTime = (p, time, extraTime) => (1 - p) * time + extraTime;
@@ -100,9 +100,9 @@ const getCircleRightIn = (halfMainEffectPercent, angle) => `
 `;
 
 export const createLongPressInAnimations = ({
-  time = DEFAULT_LASSO_LONG_PRESS_TIME,
-  extraTime = DEFAULT_LASSO_LONG_PRESS_AFTER_EFFECT_TIME,
-  delay = DEFAULT_LASSO_LONG_PRESS_EFFECT_DELAY,
+  time = DEFAULT_SELECT_LONG_PRESS_TIME,
+  extraTime = DEFAULT_SELECT_LONG_PRESS_AFTER_EFFECT_TIME,
+  delay = DEFAULT_SELECT_LONG_PRESS_EFFECT_DELAY,
   currentColor,
   targetColor,
   effectOpacity,
@@ -222,7 +222,7 @@ const getCircleOut = (halfEffectPercent, clipPath, opacity) => `
 `;
 
 export const createLongPressOutAnimations = ({
-  time = DEFAULT_LASSO_LONG_PRESS_REVERT_EFFECT_TIME,
+  time = DEFAULT_SELECT_LONG_PRESS_REVERT_EFFECT_TIME,
   currentColor,
   targetColor,
   effectOpacity,

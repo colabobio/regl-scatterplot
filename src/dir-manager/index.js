@@ -15,11 +15,15 @@ import {
   DEFAULT_DIR_MIN_DIST,
   DIR_SHOW_START_INITIATOR_TIME,
   DIR_HIDE_START_INITIATOR_TIME,
-  DEFAULT_DIR_LONG_PRESS_TIME,
-  DEFAULT_DIR_LONG_PRESS_AFTER_EFFECT_TIME,
-  DEFAULT_DIR_LONG_PRESS_EFFECT_DELAY,
-  DEFAULT_DIR_LONG_PRESS_REVERT_EFFECT_TIME,
 } from './constants';
+
+import {
+  DEFAULT_SELECT_LONG_PRESS_TIME,
+  DEFAULT_SELECT_LONG_PRESS_AFTER_EFFECT_TIME,
+  DEFAULT_SELECT_LONG_PRESS_EFFECT_DELAY,
+  DEFAULT_SELECT_LONG_PRESS_REVERT_EFFECT_TIME,
+  DIRECTIONAL_SELECTION,
+} from '../constants';
 
 import createLongPressElements from './create-long-press-elements';
 import {
@@ -253,13 +257,13 @@ export const createDir = (
     x,
     y,
     {
-      time = DEFAULT_DIR_LONG_PRESS_TIME,
-      extraTime = DEFAULT_DIR_LONG_PRESS_AFTER_EFFECT_TIME,
-      delay = DEFAULT_DIR_LONG_PRESS_EFFECT_DELAY,
+      time = DEFAULT_SELECT_LONG_PRESS_TIME,
+      extraTime = DEFAULT_SELECT_LONG_PRESS_AFTER_EFFECT_TIME,
+      delay = DEFAULT_SELECT_LONG_PRESS_EFFECT_DELAY,
     } = {
-      time: DEFAULT_DIR_LONG_PRESS_TIME,
-      extraTime: DEFAULT_DIR_LONG_PRESS_AFTER_EFFECT_TIME,
-      delay: DEFAULT_DIR_LONG_PRESS_EFFECT_DELAY,
+      time: DEFAULT_SELECT_LONG_PRESS_TIME,
+      extraTime: DEFAULT_SELECT_LONG_PRESS_AFTER_EFFECT_TIME,
+      delay: DEFAULT_SELECT_LONG_PRESS_EFFECT_DELAY,
     }
   ) => {
     longPressIsStarting = true;
@@ -331,8 +335,8 @@ export const createDir = (
   };
 
   const hideLongPressIndicator = (
-    { time = DEFAULT_DIR_LONG_PRESS_REVERT_EFFECT_TIME } = {
-      time: DEFAULT_DIR_LONG_PRESS_REVERT_EFFECT_TIME,
+    { time = DEFAULT_SELECT_LONG_PRESS_REVERT_EFFECT_TIME } = {
+      time: DEFAULT_SELECT_LONG_PRESS_REVERT_EFFECT_TIME,
     }
   ) => {
     if (!longPressIsStarting) return;
@@ -481,6 +485,8 @@ export const createDir = (
     return extend(mousePosition);
   };
 
+  const type = () => DIRECTIONAL_SELECTION;
+
   const clear = () => {
     dirPosCenter = [];
     dirPos = [];
@@ -511,8 +517,6 @@ export const createDir = (
     const currDirPosFlat = [...dirPosFlat];
 
     extendDb.cancel();
-
-    // const dircenterPositions = [...dirPosCenter]
 
     clear();
 
@@ -585,6 +589,7 @@ export const createDir = (
       clear,
       destroy,
       end,
+      type,
       extend: extendPublic,
       set,
       showInitiator,
