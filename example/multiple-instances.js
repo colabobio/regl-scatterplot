@@ -11,7 +11,6 @@ const NUM_COLUMNS = 2;
 const NUM_ROWS = 2;
 const POINT_SIZE = 3;
 const OPACITY = 0.66;
-const SELECT_INITIATOR = true;
 const FASHION_MNIST_CLASS_LABELS = [
   'T-shirt/top',
   'Trouser',
@@ -145,7 +144,9 @@ const pointSizeEl = document.querySelector('#point-size');
 const pointSizeValEl = document.querySelector('#point-size-value');
 const opacityEl = document.querySelector('#opacity');
 const opacityValEl = document.querySelector('#opacity-value');
-const clickSelectInitiatorEl = document.querySelector('#click-select-initiator');
+const clickSelectInitiatorEl = document.querySelector(
+  '#click-select-initiator'
+);
 const resetEl = document.querySelector('#reset');
 const exampleEl = document.querySelector('#example-multiple-instances');
 const clickSelectionModeEl = document.querySelector('#selection-mode');
@@ -230,12 +231,13 @@ resetEl.addEventListener('click', resetClickHandler);
 
 clickSelectionModeEl.addEventListener('change', (event) => {
   const selectionType = event.target.value; // Directional, Lasso
-  console.log("setting selection mode ", selectionType)
-  scatterplot.setSelectionManager(
-    selectionType === "Directional" ? DIRECTIONAL_SELECTION : LASSO_SELECTION
-  )
-})
-
+  console.log('setting selection mode ', selectionType);
+  scatterplots.forEach((sp) =>
+    sp.setSelectionManager(
+      selectionType === 'Directional' ? DIRECTIONAL_SELECTION : LASSO_SELECTION
+    )
+  );
+});
 
 /**
  * Link scatter plots
