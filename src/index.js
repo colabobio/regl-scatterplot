@@ -893,7 +893,8 @@ const createScatterplot = (
   const selectionEnd = (
     selPoints,
     selPointsFlat,
-    { merge = false, centerPositions } = {},
+    { merge = false } = {},
+    centerPositions = null,
   ) => {
     camera.config({ isFixed: false });
     selectionPointsCurr = [...selPoints];

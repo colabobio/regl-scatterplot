@@ -527,14 +527,14 @@ export const createDir = (
 
     const currDirPos = [...dirPos];
     const currDirPosFlat = [...dirPosFlat];
+    const currDirCenters = [...dirPosCenter];
 
     extendDb.cancel();
 
     clear();
 
-    // When `currDirPos` is empty the user didn't actually dir-search
     if (currDirPos.length) {
-      onEnd(currDirPos, currDirPosFlat, { merge });
+      onEnd(currDirPos, currDirPosFlat, { merge }, currDirCenters);
     }
 
     return currDirPos;
