@@ -438,16 +438,11 @@ export const createDir = (
 
   const extend = (currMousePos) => {
     if (dirPrevMousePos) {
-      let easing = 0.1;
-      let cx = (1 - easing) * dirPrevMousePos[0] + easing * currMousePos[0];
-      let cy = (1 - easing) * dirPrevMousePos[1] + easing * currMousePos[1];
+      const easing = 0.1;
+      const cx = (1 - easing) * dirPrevMousePos[0] + easing * currMousePos[0];
+      const cy = (1 - easing) * dirPrevMousePos[1] + easing * currMousePos[1];
 
-      const d = l2PointDist(
-        cx,
-        cy,
-        dirPrevMousePos[0],
-        dirPrevMousePos[1],
-      );
+      const d = l2PointDist(cx, cy, dirPrevMousePos[0], dirPrevMousePos[1]);
 
       if (d > DEFAULT_DIR_MIN_DIST) {
         const dx = cx - dirPrevMousePos[0];
@@ -457,14 +452,8 @@ export const createDir = (
 
         const w = 10;
 
-        const pl = pointNorm([
-          cx - w * nx,
-          cy - w * ny,
-        ]);
-        const pr = pointNorm([
-          cx + w * nx,
-          cy + w * ny,
-        ]);
+        const pl = pointNorm([cx - w * nx, cy - w * ny]);
+        const pr = pointNorm([cx + w * nx, cy + w * ny]);
 
         dirPrevMousePos = [cx, cy];
         const point = pointNorm([cx, cy]);
