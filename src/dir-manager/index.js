@@ -438,32 +438,36 @@ export const createDir = (
 
   const extend = (currMousePos) => {
     if (dirPrevMousePos) {
+      let easing = 0.1;
+      let cx = (1 - easing) * dirPrevMousePos[0] + easing * currMousePos[0];
+      let cy = (1 - easing) * dirPrevMousePos[1] + easing * currMousePos[1];
+
       const d = l2PointDist(
-        currMousePos[0],
-        currMousePos[1],
+        cx,
+        cy,
         dirPrevMousePos[0],
         dirPrevMousePos[1],
       );
 
       if (d > DEFAULT_DIR_MIN_DIST) {
-        const dx = currMousePos[0] - dirPrevMousePos[0];
-        const dy = currMousePos[1] - dirPrevMousePos[1];
+        const dx = cx - dirPrevMousePos[0];
+        const dy = cy - dirPrevMousePos[1];
         const nx = -dy / d;
         const ny = +dx / d;
 
         const w = 10;
 
         const pl = pointNorm([
-          currMousePos[0] - w * nx,
-          currMousePos[1] - w * ny,
+          cx - w * nx,
+          cy - w * ny,
         ]);
         const pr = pointNorm([
-          currMousePos[0] + w * nx,
-          currMousePos[1] + w * ny,
+          cx + w * nx,
+          cy + w * ny,
         ]);
 
-        dirPrevMousePos = currMousePos;
-        const point = pointNorm(currMousePos);
+        dirPrevMousePos = [cx, cy];
+        const point = pointNorm([cx, cy]);
 
         dirPosCenter.push(point);
         const N = dirPosCenter.length;
@@ -471,9 +475,6 @@ export const createDir = (
         // insert [pl, pr] in dirPos at position N
         dirPos.splice(N, 0, pl, pr);
         dirPosFlat.splice(2 * (N - 1), 0, pl[0], pl[1], pr[0], pr[1]);
-
-        // dirPos.push(point);
-        // dirPosFlat.push(point[0], point[1]);
 
         if (dirPos.length > 1) {
           draw();
