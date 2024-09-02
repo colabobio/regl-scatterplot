@@ -1,8 +1,8 @@
-import { checkReglExtensions, createRegl } from './utils';
 import { CLEAR_OPTIONS, DEFAULT_GAMMA } from './constants';
+import { checkReglExtensions, createRegl } from './utils';
 
 export const createRenderer = (
-  /** @type {Partial<import('./types').RendererOptions>} */ options = {}
+  /** @type {Partial<import('./types').RendererOptions>} */ options = {},
 ) => {
   let {
     regl,
@@ -12,10 +12,9 @@ export const createRenderer = (
 
   let isDestroyed = false;
 
-  // Same as regl ||= createRegl(canvas) but avoids having to rely on
-  // https://babeljs.io/docs/en/babel-plugin-proposal-logical-assignment-operators
-  // eslint-disable-next-line no-unused-expressions
-  regl || (regl = createRegl(canvas));
+  if (!regl) {
+    regl = createRegl(canvas);
+  }
 
   const isSupportingAllGlExtensions = checkReglExtensions(regl);
 
@@ -66,8 +65,10 @@ export const createRenderer = (
     blend: {
       enable: true,
       func: {
+        // biome-ignore lint/style/useNamingConvention: Regl internal
         srcRGB: 'one',
         srcAlpha: 'one',
+        // biome-ignore lint/style/useNamingConvention: Regl internal
         dstRGB: 'one minus src alpha',
         dstAlpha: 'one minus src alpha',
       },
@@ -89,7 +90,7 @@ export const createRenderer = (
       0,
       0,
       targetCanvas.width,
-      targetCanvas.height
+      targetCanvas.height,
     );
   };
 
@@ -98,7 +99,7 @@ export const createRenderer = (
    */
   const render = (
     /** @type {(): void} */ draw,
-    /** @type {HTMLCanvasElement} */ targetCanvas
+    /** @type {HTMLCanvasElement} */ targetCanvas,
   ) => {
     // Clear internal canvas
     regl.clear(CLEAR_OPTIONS);
@@ -144,8 +145,22 @@ export const createRenderer = (
   });
 
   const resize = () => {
-    canvas.width = window.innerWidth * window.devicePixelRatio;
-    canvas.height = window.innerHeight * window.devicePixelRatio;
+    // We need to limit the width and height by the screen size to prevent
+    // a bug in VSCode where the window height is said to be taller than the
+    // screen height. The problem with too large dimensions is that at some
+    // point WebGL will break down because there's an upper limit on how large
+    // any buffer and texture can be. It also harms the performance quite a bit.
+    //
+    // By restricting the widht/height to the screen size we should have a safe
+    // upper limit for the canvas size.
+    //
+    // @see
+    // https://github.com/microsoft/vscode/issues/225808
+    // https://github.com/flekschas/jupyter-scatter/issues/37
+    const width = Math.min(window.innerWidth, window.screen.availWidth);
+    const height = Math.min(window.innerHeight, window.screen.availHeight);
+    canvas.width = width * window.devicePixelRatio;
+    canvas.height = height * window.devicePixelRatio;
     fboRes[0] = canvas.width;
     fboRes[1] = canvas.height;
     fbo.resize(...fboRes);

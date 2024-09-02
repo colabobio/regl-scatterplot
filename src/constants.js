@@ -55,10 +55,13 @@ export const CONTINUOUS = 'continuous';
 export const CATEGORICAL = 'categorical';
 export const VALUE_ZW_DATA_TYPES = [CONTINUOUS, CATEGORICAL];
 
-// Default selection parameters 
+// Default selection parameters
 export const SELECT_CLEAR_ON_DESELECT = 'deselect';
 export const SELECT_CLEAR_ON_END = 'selectionEnd';
-export const SELECT_CLEAR_EVENTS = [SELECT_CLEAR_ON_DESELECT, SELECT_CLEAR_ON_END];
+export const SELECT_CLEAR_EVENTS = [
+  SELECT_CLEAR_ON_DESELECT,
+  SELECT_CLEAR_ON_END,
+];
 export const DEFAULT_SELECT_COLOR = [0, 0.666666667, 1, 1];
 export const DEFAULT_SELECT_LINE_WIDTH = 2;
 export const DEFAULT_SELECT_INITIATOR = false;
@@ -144,12 +147,12 @@ export const DEFAULT_ANNOTATION_HVLINE_LIMIT = 1000;
 export const DEFAULT_TARGET = [0, 0];
 export const DEFAULT_DISTANCE = 1;
 export const DEFAULT_ROTATION = 0;
-// prettier-ignore
+// biome-ignore format: the array should not be formatted
 export const DEFAULT_VIEW = new Float32Array([
   1, 0, 0, 0,
   0, 1, 0, 0,
   0, 0, 1, 0,
-  0, 0, 0, 1
+  0, 0, 0, 1,
 ]);
 
 // Error codes
