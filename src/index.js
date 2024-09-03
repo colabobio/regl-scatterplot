@@ -887,13 +887,17 @@ const createScatterplot = (
     pubSub.publish('selectionStart');
   };
 
-  const selectionExtend = (selPoints, selPointsFlat, centerPositions = null) => {
+  const selectionExtend = (
+    selPoints,
+    selPointsFlat,
+    centerPositions = null,
+  ) => {
     selectionPointsCurr = [...selPoints];
     if (centerPositions) {
       selectionCenterPointsCurr = [...centerPositions];
     } else {
       selectionCenterPointsCurr = [];
-    }    
+    }
     selectionOutline.setPoints(selPointsFlat);
     pubSub.publish('selectionExtend', { coordinates: selPoints });
   };
@@ -910,7 +914,7 @@ const createScatterplot = (
       selectionCenterPointsCurr = [...centerPositions];
     } else {
       selectionCenterPointsCurr = [];
-    }    
+    }
     const pointsInSelection = findPointsInSelection(selPointsFlat);
     select(pointsInSelection, { merge });
 
