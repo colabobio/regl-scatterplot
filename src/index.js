@@ -3066,11 +3066,7 @@ const createScatterplot = (
         mouseMode === MOUSE_MODE_ROTATE ? 'rotate' : 'pan',
     });
 
-    if (
-      MOUSE_SELECT_MODES.includes(mouseMode) &&
-      MOUSE_SELECT_MODES.includes(prevMode) &&
-      mouseMode !== prevMode
-    ) {
+    if (MOUSE_SELECT_MODES.includes(mouseMode) && mouseMode !== prevMode) {
       if (mouseMode === MOUSE_MODE_SELECT_DIRECTIONAL) {
         setSelectionManager(DIRECTIONAL_SELECTION);
       }
