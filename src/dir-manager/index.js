@@ -433,7 +433,7 @@ export const createDir = (
   };
 
   const draw = () => {
-    onDraw(dirPos, dirPosFlat);
+    onDraw(dirPos, dirPosFlat, dirPosCenter);
   };
 
   const extend = (currMousePos) => {

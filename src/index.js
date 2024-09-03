@@ -341,6 +341,7 @@ const createScatterplot = (
   let numPointsInView = 0;
   let selectionActive = false;
   let selectionPointsCurr = [];
+  let selectionCenterPointsCurr = [];
   let spatialIndex;
   let viewAspectRatio;
   let dataAspectRatio =
@@ -696,6 +697,7 @@ const createScatterplot = (
 
   const selectionClear = () => {
     selectionPointsCurr = [];
+    selectionCenterPointsCurr = [];
     if (selectionOutline) {
       selectionOutline.clear();
     }
@@ -885,8 +887,13 @@ const createScatterplot = (
     pubSub.publish('selectionStart');
   };
 
-  const selectionExtend = (selPoints, selPointsFlat) => {
-    selectionPointsCurr = selPoints;
+  const selectionExtend = (selPoints, selPointsFlat, centerPositions = null) => {
+    selectionPointsCurr = [...selPoints];
+    if (centerPositions) {
+      selectionCenterPointsCurr = [...centerPositions];
+    } else {
+      selectionCenterPointsCurr = [];
+    }    
     selectionOutline.setPoints(selPointsFlat);
     pubSub.publish('selectionExtend', { coordinates: selPoints });
   };
@@ -899,12 +906,17 @@ const createScatterplot = (
   ) => {
     camera.config({ isFixed: false });
     selectionPointsCurr = [...selPoints];
+    if (centerPositions) {
+      selectionCenterPointsCurr = [...centerPositions];
+    } else {
+      selectionCenterPointsCurr = [];
+    }    
     const pointsInSelection = findPointsInSelection(selPointsFlat);
     select(pointsInSelection, { merge });
 
     pubSub.publish('selectionEnd', {
       coordinates: selectionPointsCurr,
-      centers: centerPositions,
+      centers: selectionCenterPointsCurr,
     });
     if (selectClearEvent === SELECT_CLEAR_ON_END) {
       selectionClear();
