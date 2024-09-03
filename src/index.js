@@ -119,6 +119,7 @@ import {
   MOUSE_MODE_ROTATE,
   MOUSE_MODE_SELECT_DIRECTIONAL,
   MOUSE_MODE_SELECT_LASSO,
+  MOUSE_SELECT_MODES,
   SELECT_CLEAR_EVENTS,
   SELECT_CLEAR_ON_DESELECT,
   SELECT_CLEAR_ON_END,
@@ -3057,12 +3058,26 @@ const createScatterplot = (
   };
 
   const setMouseMode = (newMouseMode) => {
+    const prevMode = mouseMode;
     mouseMode = limit(MOUSE_MODES, MOUSE_MODE_PANZOOM)(newMouseMode);
 
     camera.config({
       defaultMouseDownMoveAction:
         mouseMode === MOUSE_MODE_ROTATE ? 'rotate' : 'pan',
     });
+
+    if (
+      MOUSE_SELECT_MODES.includes(mouseMode) &&
+      MOUSE_SELECT_MODES.includes(prevMode) &&
+      mouseMode !== prevMode
+    ) {
+      if (mouseMode === MOUSE_MODE_SELECT_DIRECTIONAL) {
+        setSelectionManager(DIRECTIONAL_SELECTION);
+      }
+      if (mouseMode === MOUSE_MODE_SELECT_LASSO) {
+        setSelectionManager(LASSO_SELECTION);
+      }
+    }
   };
 
   const setShowReticle = (newShowReticle) => {
